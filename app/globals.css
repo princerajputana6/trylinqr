@@ -4,6 +4,7 @@
 
 :root {
   --font-inter: 'Inter', system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
 }
 
 * {
@@ -14,9 +15,10 @@ html,
 body {
   padding: 0;
   margin: 0;
-  background: #070b16;
-  color: #eef1f7;
+  background: #f2f1ed;
+  color: #161616;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 a {
@@ -24,19 +26,35 @@ a {
   text-decoration: none;
 }
 
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display), 'Plus Jakarta Sans', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+    color: #161616;
+  }
+}
+
 ::-webkit-scrollbar {
-  width: 9px;
-  height: 9px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #0e1426;
+  background: #ecebe6;
 }
 ::-webkit-scrollbar-thumb {
-  background: #283355;
+  background: #c8c5bb;
   border-radius: 5px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #e11d2e;
+  background: #710014;
+}
+
+::selection {
+  background: rgba(113, 0, 20, 0.25);
+  color: #161616;
 }
 
 @layer components {
@@ -47,31 +65,40 @@ a {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
-    @apply btn bg-brand-500 text-white shadow-glow hover:bg-brand-600 hover:-translate-y-0.5 active:translate-y-0;
+    @apply btn bg-brand-700 text-white shadow-glow hover:bg-brand-800 hover:-translate-y-0.5 active:translate-y-0;
   }
-  .btn-secondary {
-    @apply btn bg-royal-500 text-white shadow-glow-blue hover:bg-royal-600 hover:-translate-y-0.5 active:translate-y-0;
+  .btn-sand {
+    @apply btn bg-sand-500 text-white hover:bg-sand-600 hover:-translate-y-0.5;
+  }
+  .btn-dark {
+    @apply btn bg-obsidian text-white hover:bg-obsidian-soft hover:-translate-y-0.5;
   }
   .btn-ghost {
-    @apply btn bg-white/5 text-white hover:bg-white/10;
+    @apply btn bg-black/[0.04] text-obsidian hover:bg-black/[0.07];
   }
   .btn-outline {
-    @apply btn border border-ink-line text-white hover:border-white/30 hover:bg-white/5;
+    @apply btn border border-black/15 text-obsidian hover:border-brand-700 hover:bg-brand-700/[0.04];
   }
   .input {
-    @apply w-full rounded-xl border border-ink-line bg-ink-soft px-4 py-2.5 text-sm text-white placeholder:text-ink-muted focus:border-royal-500 focus:outline-none focus:ring-2 focus:ring-royal-500/30;
+    @apply w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm text-obsidian placeholder:text-ink-muted focus:border-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-700/15;
   }
   .label {
-    @apply mb-1.5 block text-sm font-medium text-white/80;
+    @apply mb-1.5 block text-sm font-medium text-obsidian/80;
   }
   .card {
-    @apply rounded-2xl border border-ink-line bg-ink-card;
+    @apply rounded-2xl border border-ink-line bg-white shadow-card;
+  }
+  .card-glass {
+    @apply rounded-2xl border border-white/20 bg-white/70 shadow-card backdrop-blur-xl;
   }
   .chip {
     @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium;
   }
   .text-gradient {
-    @apply bg-gradient-to-r from-brand-500 via-brand-400 to-royal-400 bg-clip-text text-transparent;
+    @apply bg-brand-gradient bg-clip-text text-transparent;
+  }
+  .section-eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.24em] text-brand-700;
   }
 }
 
@@ -84,7 +111,75 @@ a {
 }
 
 .bg-grid {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(22, 22, 22, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22, 22, 22, 0.05) 1px, transparent 1px);
   background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 30%, transparent 100%);
+}
+
+.bg-grid-dark {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.hover-glow {
+  transition: box-shadow 0.4s ease, transform 0.4s ease;
+}
+.hover-glow:hover {
+  box-shadow: 0 28px 50px -22px rgba(113, 0, 20, 0.32);
+}
+
+.divider-fade {
+  background: linear-gradient(90deg, transparent, rgba(22, 22, 22, 0.12), transparent);
+}
+
+.legal-prose {
+  color: rgba(22, 22, 22, 0.78);
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+.legal-prose h2 {
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #161616;
+  letter-spacing: -0.02em;
+}
+.legal-prose h3 {
+  margin-top: 1.8rem;
+  margin-bottom: 0.5rem;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #161616;
+}
+.legal-prose p {
+  margin: 0.85rem 0;
+}
+.legal-prose ul {
+  margin: 0.6rem 0 1rem;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+.legal-prose ul li {
+  margin: 0.4rem 0;
+}
+.legal-prose a {
+  color: #710014;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.legal-prose a:hover {
+  color: #8a0c1b;
+}
+.legal-prose strong {
+  color: #161616;
+}
+.legal-prose hr {
+  margin: 2rem 0;
+  border: 0;
+  border-top: 1px dashed rgba(113, 0, 20, 0.25);
 }

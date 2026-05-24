@@ -1,3 +1,4 @@
+import { SearchX } from 'lucide-react';
 import EventCard from './EventCard';
 import { SkeletonCard } from '@/components/shared/LoadingSpinner';
 
@@ -15,8 +16,10 @@ export default function EventGrid({ events = [], loading = false, empty }) {
   if (!events.length) {
     return (
       <div className="card grid place-items-center py-20 text-center">
-        <div className="text-4xl">🔍</div>
-        <p className="mt-3 font-semibold">No events found</p>
+        <div className="grid h-14 w-14 place-items-center rounded-2xl bg-brand-700/[0.08] text-brand-700">
+          <SearchX className="h-7 w-7" />
+        </div>
+        <p className="mt-4 font-semibold text-obsidian">No events found</p>
         <p className="mt-1 text-sm text-ink-muted">
           {empty || 'Try adjusting your filters or check back later.'}
         </p>

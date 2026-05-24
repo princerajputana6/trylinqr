@@ -87,7 +87,7 @@ export default function ImageUploader({
           </div>
         ))}
         {(multiple || !images.length) && (
-          <label className="grid h-24 w-32 cursor-pointer place-items-center rounded-xl border border-dashed border-white/15 text-ink-muted hover:border-brand-500 hover:text-brand-400">
+          <label className="grid h-24 w-32 cursor-pointer place-items-center rounded-xl border border-dashed border-ink-line text-ink-muted hover:border-brand-700 hover:text-brand-700">
             {busy ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (

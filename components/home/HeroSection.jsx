@@ -4,14 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Search, MapPin, ArrowRight, PlayCircle, Sparkles } from 'lucide-react';
-import { CITIES } from '@/lib/constants';
-import HeroEventSlider from '@/components/home/HeroEventSlider';
+import { Search, MapPin, ArrowRight, Sparkles } from 'lucide-react';
+import { CITIES, CATEGORIES } from '@/lib/constants';
+import FloatingEventStack from '@/components/home/FloatingEventStack';
 
-const HERO_VIDEO =
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4';
-const HERO_POSTER =
-  'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=1600&q=75';
+const quickCats = ['concert', 'comedy', 'workshop', 'sports', 'festival', 'food'];
 
 export default function HeroSection({ events = [] }) {
   const router = useRouter();
@@ -27,61 +24,45 @@ export default function HeroSection({ events = [] }) {
   };
 
   return (
-    <section className="relative -mt-[68px] flex min-h-screen items-center overflow-hidden">
-      {/* background video */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        poster={HERO_POSTER}
-        className="absolute inset-0 h-full w-full object-cover"
-      >
-        <source src="/hero.mp4" type="video/mp4" />
-        <source src={HERO_VIDEO} type="video/mp4" />
-      </video>
+    <section className="relative -mt-[68px] flex min-h-screen items-center overflow-hidden bg-pearl pt-[68px]">
+      {/* soft ambient layers */}
+      <div className="bg-grid absolute inset-0 opacity-50" />
+      <div className="absolute -left-44 top-1/4 h-[520px] w-[520px] rounded-full bg-brand-700/10 blur-[140px]" />
+      <div className="absolute -right-32 bottom-0 h-[460px] w-[460px] rounded-full bg-sand-400/25 blur-[140px]" />
 
-      {/* overlays */}
-      <div className="absolute inset-0 bg-ink/80" />
-      <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/85 to-ink/40" />
-      <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/70" />
-      <div className="absolute -left-40 top-1/3 h-[420px] w-[420px] rounded-full bg-brand-600/25 blur-[130px]" />
-      <div className="absolute -right-32 bottom-0 h-[420px] w-[420px] rounded-full bg-royal-600/25 blur-[130px]" />
-
-      <div className="container-page relative grid w-full items-center gap-12 pb-16 pt-28 lg:grid-cols-[1.05fr_0.95fr] lg:pt-24">
-        {/* left — copy + search */}
+      <div className="container-page relative grid w-full items-center gap-12 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:py-12">
+        {/* left — copy + search + ctas */}
         <div>
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-medium text-white/85 backdrop-blur"
+            className="flex w-fit items-center gap-2 rounded-full border border-ink-line bg-white px-4 py-1.5 text-xs font-medium text-obsidian shadow-card"
           >
-            <Sparkles className="h-3.5 w-3.5 text-brand-400" />
-            India&apos;s multi-domain event platform
+            <Sparkles className="h-3.5 w-3.5 text-brand-700" />
+            India&apos;s premium event ecosystem
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl xl:text-[3.7rem]"
+            className="mt-6 font-display text-[2.7rem] font-extrabold leading-[1.04] tracking-tight text-obsidian sm:text-5xl xl:text-[4rem]"
           >
-            Where every
-            <br />
-            event finds its{' '}
+            Discover events that{' '}
             <span className="relative whitespace-nowrap">
-              <span className="text-gradient">crowd</span>
+              <span className="text-brand-700">match your vibe</span>
               <svg
                 className="absolute -bottom-2 left-0 w-full"
-                viewBox="0 0 200 12"
+                viewBox="0 0 300 12"
                 fill="none"
               >
                 <path
-                  d="M2 9c50-6 146-8 196-3"
-                  stroke="#e11d2e"
-                  strokeWidth="4"
+                  d="M2 9 C90 -2 220 -2 298 6"
+                  stroke="#710014"
+                  strokeWidth="3.5"
                   strokeLinecap="round"
+                  opacity="0.85"
                 />
               </svg>
             </span>
@@ -91,11 +72,11 @@ export default function HeroSection({ events = [] }) {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="mt-6 max-w-lg text-base text-white/70 md:text-lg"
+            className="mt-6 max-w-lg text-base leading-relaxed text-obsidian/70 md:text-lg"
           >
-            Bike rides, jagrans, concerts, workshops, sports and more —
-            discover, book and experience events near you. Anyone can host,
-            everyone can join.
+            From concerts and festivals to workshops, sports and food
+            experiences — one cinematic place to find what&apos;s on, book in
+            seconds, and never miss a moment.
           </motion.p>
 
           {/* search */}
@@ -104,30 +85,28 @@ export default function HeroSection({ events = [] }) {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="mt-7 flex max-w-xl flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.07] p-2.5 backdrop-blur-xl sm:flex-row"
+            className="mt-7 flex max-w-xl flex-col gap-2 rounded-2xl border border-ink-line bg-white p-2 shadow-card sm:flex-row"
           >
             <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Search events…"
-                className="w-full rounded-xl bg-transparent py-3 pl-11 pr-3 text-sm text-white placeholder:text-white/45 focus:outline-none"
+                placeholder="Search events, organizers, keywords…"
+                className="w-full rounded-xl bg-transparent py-3 pl-11 pr-3 text-sm text-obsidian placeholder:text-ink-muted focus:outline-none"
               />
             </div>
-            <div className="hidden w-px self-stretch bg-white/10 sm:block" />
+            <div className="hidden w-px self-stretch bg-ink-line sm:block" />
             <div className="relative sm:w-40">
-              <MapPin className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+              <MapPin className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
               <select
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full appearance-none rounded-xl bg-transparent py-3 pl-11 pr-3 text-sm text-white focus:outline-none"
+                className="w-full appearance-none rounded-xl bg-transparent py-3 pl-11 pr-3 text-sm text-obsidian focus:outline-none"
               >
-                <option value="" className="bg-ink-soft">
-                  All cities
-                </option>
+                <option value="">All cities</option>
                 {CITIES.map((c) => (
-                  <option key={c} value={c} className="bg-ink-soft">
+                  <option key={c} value={c}>
                     {c}
                   </option>
                 ))}
@@ -135,51 +114,70 @@ export default function HeroSection({ events = [] }) {
             </div>
             <button
               type="submit"
-              className="flex items-center justify-center gap-2 rounded-xl bg-brand-500 px-6 py-3 text-sm font-semibold text-white shadow-glow transition-all hover:bg-brand-600 hover:-translate-y-0.5"
+              className="flex items-center justify-center gap-2 rounded-xl bg-brand-700 px-6 py-3 text-sm font-semibold text-white shadow-glow transition-transform hover:bg-brand-800 hover:-translate-y-0.5"
             >
               Search
               <ArrowRight className="h-4 w-4" />
             </button>
           </motion.form>
 
+          {/* primary CTAs */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-7 flex flex-wrap items-center gap-4"
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="mt-6 flex flex-wrap items-center gap-3"
           >
             <Link href="/explore" className="btn-primary">
-              Explore all events
+              Explore Events
+              <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link
-              href="/admin-register"
-              className="flex items-center gap-2 text-sm font-semibold text-white/80 transition-colors hover:text-white"
-            >
-              <PlayCircle className="h-5 w-5 text-brand-400" />
-              Host your own event
+            <Link href="/admin-register" className="btn-outline">
+              Become Organizer
             </Link>
+          </motion.div>
+
+          {/* trending categories */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="mt-8 flex flex-wrap gap-2"
+          >
+            <span className="self-center text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">
+              Trending:
+            </span>
+            {quickCats.map((slug) => {
+              const c = CATEGORIES.find((x) => x.slug === slug);
+              if (!c) return null;
+              const Icon = c.icon;
+              return (
+                <Link
+                  key={c.slug}
+                  href={`/categories/${c.slug}`}
+                  className="group flex items-center gap-1.5 rounded-full border border-ink-line bg-white px-3.5 py-1.5 text-xs font-medium text-obsidian/80 shadow-card transition-all hover:-translate-y-0.5 hover:border-brand-700 hover:text-brand-700"
+                >
+                  <Icon className="h-3.5 w-3.5" style={{ color: c.color }} />
+                  {c.label}
+                </Link>
+              );
+            })}
           </motion.div>
         </div>
 
-        {/* right — recent events slider */}
+        {/* right — floating event posters */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 20 }}
+          initial={{ opacity: 0, scale: 0.94, y: 24 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.25 }}
+          className="hidden lg:block"
         >
-          <HeroEventSlider events={events} />
+          <FloatingEventStack events={events} />
         </motion.div>
-      </div>
 
-      {/* scroll cue */}
-      <div className="absolute inset-x-0 bottom-5 flex justify-center">
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.6, repeat: Infinity }}
-          className="flex h-9 w-6 items-start justify-center rounded-full border-2 border-white/25 p-1"
-        >
-          <span className="h-1.5 w-1 rounded-full bg-white/60" />
-        </motion.div>
+        <div className="block lg:hidden">
+          <FloatingEventStack events={events} />
+        </div>
       </div>
     </section>
   );

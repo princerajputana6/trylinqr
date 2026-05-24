@@ -40,7 +40,7 @@ export default function SuperadminDashboard() {
           {stats.pendingAdmins > 0 && (
             <Link
               href="/superadmin/admins"
-              className="card flex items-center gap-3 p-4 hover:border-brand-500/40"
+              className="card flex items-center gap-3 p-4 hover:border-brand-700/40"
             >
               <UserCheck className="h-5 w-5 text-amber-400" />
               <span className="text-sm">
@@ -53,7 +53,7 @@ export default function SuperadminDashboard() {
           {stats.pendingEvents > 0 && (
             <Link
               href="/superadmin/events?status=pending"
-              className="card flex items-center gap-3 p-4 hover:border-brand-500/40"
+              className="card flex items-center gap-3 p-4 hover:border-brand-700/40"
             >
               <Clock className="h-5 w-5 text-amber-400" />
               <span className="text-sm">

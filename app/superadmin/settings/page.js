@@ -54,7 +54,7 @@ export default function SettingsPage() {
           return (
             <div key={it.key} className="card flex items-center gap-4 p-4">
               <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/5">
-                <Icon className="h-5 w-5 text-brand-400" />
+                <Icon className="h-5 w-5 text-brand-700" />
               </div>
               <div className="flex-1">
                 <p className="font-semibold">{it.label}</p>
@@ -67,7 +67,7 @@ export default function SettingsPage() {
                   <CheckCircle2 className="h-3.5 w-3.5" /> Connected
                 </span>
               ) : (
-                <span className="chip bg-white/10 text-ink-muted">
+                <span className="chip bg-pearl text-ink-muted">
                   <XCircle className="h-3.5 w-3.5" /> Not set
                 </span>
               )}

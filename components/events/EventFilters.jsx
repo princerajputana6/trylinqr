@@ -16,14 +16,14 @@ export default function EventFilters({ filters, setFilters }) {
   return (
     <div className="card space-y-5 p-5">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 font-semibold">
-          <SlidersHorizontal className="h-4 w-4 text-brand-400" />
+        <div className="flex items-center gap-2 font-semibold text-obsidian">
+          <SlidersHorizontal className="h-4 w-4 text-brand-700" />
           Filters
         </div>
         {active && (
           <button
             onClick={reset}
-            className="flex items-center gap-1 text-xs text-brand-400 hover:underline"
+            className="flex items-center gap-1 text-xs font-semibold text-brand-700 hover:underline"
           >
             <X className="h-3 w-3" /> Clear
           </button>
@@ -33,19 +33,23 @@ export default function EventFilters({ filters, setFilters }) {
       <div>
         <p className="label">Category</p>
         <div className="flex flex-wrap gap-1.5">
-          {CATEGORIES.map((c) => (
-            <button
-              key={c.slug}
-              onClick={() => update('category', c.slug)}
-              className={`chip border transition-colors ${
-                filters.category === c.slug
-                  ? 'border-brand-500 bg-brand-500/15 text-brand-400'
-                  : 'border-white/10 text-white/70 hover:border-white/25'
-              }`}
-            >
-              {c.emoji} {c.label}
-            </button>
-          ))}
+          {CATEGORIES.map((c) => {
+            const Icon = c.icon;
+            return (
+              <button
+                key={c.slug}
+                onClick={() => update('category', c.slug)}
+                className={`chip gap-1.5 border transition-colors ${
+                  filters.category === c.slug
+                    ? 'border-brand-700 bg-brand-700/[0.08] text-brand-700'
+                    : 'border-ink-line bg-pearl text-obsidian/75 hover:border-obsidian/25'
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {c.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -77,8 +81,8 @@ export default function EventFilters({ filters, setFilters }) {
               onClick={() => update('price', p.v)}
               className={`chip flex-1 justify-center border ${
                 filters.price === p.v
-                  ? 'border-brand-500 bg-brand-500/15 text-brand-400'
-                  : 'border-white/10 text-white/70'
+                  ? 'border-brand-700 bg-brand-700/[0.08] text-brand-700'
+                  : 'border-ink-line bg-pearl text-obsidian/75'
               }`}
             >
               {p.l}

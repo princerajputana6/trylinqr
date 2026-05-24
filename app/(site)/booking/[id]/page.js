@@ -11,6 +11,7 @@ import {
   Download,
   CheckCircle2,
   XCircle,
+  LifeBuoy,
 } from 'lucide-react';
 import Protected from '@/components/auth/Protected';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -76,10 +77,10 @@ function BookingInner() {
         animate={{ opacity: 1, y: 0 }}
         className="card overflow-hidden"
       >
-        <div className="flex items-center gap-3 bg-gradient-to-r from-brand-600 to-brand-800 p-6">
+        <div className="flex items-center gap-3 bg-gradient-to-r from-brand-700 to-brand-800 p-6 text-white">
           <CheckCircle2 className="h-10 w-10" />
           <div>
-            <h1 className="text-xl font-extrabold">
+            <h1 className="text-xl font-extrabold text-white">
               {booking.paymentStatus === 'refunded'
                 ? 'Booking cancelled'
                 : 'Booking confirmed'}
@@ -110,7 +111,7 @@ function BookingInner() {
             </p>
           </div>
 
-          <div className="my-5 grid grid-cols-3 gap-3 rounded-xl bg-white/5 p-4 text-center">
+          <div className="my-5 grid grid-cols-3 gap-3 rounded-xl bg-pearl p-4 text-center">
             <div>
               <p className="text-xs text-ink-muted">Tier</p>
               <p className="font-semibold">{booking.ticketTier?.name}</p>
@@ -140,7 +141,7 @@ function BookingInner() {
                 className="h-52 w-52 rounded-2xl border-4 border-white"
               />
               {booking.checkedIn ? (
-                <span className="chip bg-emerald-500/15 text-emerald-400">
+                <span className="chip bg-emerald-50 text-emerald-700">
                   <CheckCircle2 className="h-3.5 w-3.5" /> Checked in
                 </span>
               ) : (
@@ -150,7 +151,7 @@ function BookingInner() {
               )}
             </div>
           ) : (
-            <div className="flex items-center justify-center gap-2 rounded-xl bg-white/5 py-6 text-sm text-ink-muted">
+            <div className="flex items-center justify-center gap-2 rounded-xl bg-pearl py-6 text-sm text-ink-muted">
               <XCircle className="h-5 w-5" />
               {booking.paymentStatus === 'refunded'
                 ? 'This booking was cancelled.'
@@ -158,18 +159,21 @@ function BookingInner() {
             </div>
           )}
 
-          <div className="mt-6 flex gap-2">
-            <Link
-              href={`/events/${event.slug}`}
-              className="btn-ghost flex-1"
-            >
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Link href={`/events/${event.slug}`} className="btn-ghost flex-1">
               View event
+            </Link>
+            <Link
+              href={`/support/new?booking=${booking._id}`}
+              className="btn-outline flex-1"
+            >
+              <LifeBuoy className="h-4 w-4" /> Need help
             </Link>
             {canCancel && (
               <button
                 onClick={cancel}
                 disabled={cancelling}
-                className="btn-outline flex-1 text-brand-400"
+                className="btn-outline flex-1 text-brand-700"
               >
                 {cancelling ? 'Cancelling…' : 'Cancel booking'}
               </button>

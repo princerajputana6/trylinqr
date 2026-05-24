@@ -46,7 +46,7 @@ export default function TicketSelector({ event }) {
   return (
     <div className="card p-5">
       <h3 className="mb-4 flex items-center gap-2 font-bold">
-        <Ticket className="h-5 w-5 text-brand-400" /> Select tickets
+        <Ticket className="h-5 w-5 text-brand-700" /> Select tickets
       </h3>
 
       <div className="space-y-2">
@@ -63,14 +63,14 @@ export default function TicketSelector({ event }) {
               disabled={left <= 0}
               className={`flex w-full items-start justify-between rounded-xl border p-3 text-left transition-colors disabled:opacity-50 ${
                 active
-                  ? 'border-brand-500 bg-brand-500/10'
-                  : 'border-white/10 hover:border-white/25'
+                  ? 'border-brand-700 bg-brand-700/[0.06]'
+                  : 'border-ink-line hover:border-obsidian/25'
               }`}
             >
               <div>
                 <div className="flex items-center gap-2 font-semibold">
                   {t.name}
-                  {active && <Check className="h-4 w-4 text-brand-400" />}
+                  {active && <Check className="h-4 w-4 text-brand-700" />}
                 </div>
                 {t.description && (
                   <p className="mt-0.5 text-xs text-ink-muted">
@@ -104,14 +104,14 @@ export default function TicketSelector({ event }) {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setQty((q) => Math.max(1, q - 1))}
-              className="grid h-8 w-8 place-items-center rounded-lg bg-white/5 hover:bg-white/10"
+              className="grid h-8 w-8 place-items-center rounded-lg border border-ink-line bg-pearl hover:bg-pearl/70"
             >
               <Minus className="h-4 w-4" />
             </button>
             <span className="w-6 text-center font-bold">{qty}</span>
             <button
               onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
-              className="grid h-8 w-8 place-items-center rounded-lg bg-white/5 hover:bg-white/10"
+              className="grid h-8 w-8 place-items-center rounded-lg border border-ink-line bg-pearl hover:bg-pearl/70"
             >
               <Plus className="h-4 w-4" />
             </button>
@@ -119,7 +119,7 @@ export default function TicketSelector({ event }) {
         </div>
       )}
 
-      <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4">
+      <div className="mt-4 flex items-center justify-between border-t border-ink-line pt-4">
         <span className="text-sm text-ink-muted">Total</span>
         <span className="text-xl font-extrabold">
           {total === 0 ? 'FREE' : formatCurrency(total)}

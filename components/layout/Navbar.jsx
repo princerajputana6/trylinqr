@@ -18,6 +18,8 @@ import {
   Compass,
   ChevronDown,
   Sparkles,
+  LifeBuoy,
+  Truck,
 } from 'lucide-react';
 import { CATEGORIES } from '@/lib/constants';
 
@@ -32,14 +34,15 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [unread, setUnread] = useState(0);
 
-  const isHome = pathname === '/';
-
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     onScroll();
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  const isHome = pathname === '/';
+  const transparent = isHome && !scrolled;
 
   useEffect(() => {
     setOpen(false);
@@ -68,39 +71,50 @@ export default function Navbar() {
     if (q.trim()) router.push(`/search?q=${encodeURIComponent(q.trim())}`);
   };
 
-  const transparent = isHome && !scrolled;
-
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
         transparent
           ? 'bg-transparent'
-          : 'border-b border-white/10 bg-ink/85 shadow-soft backdrop-blur-xl'
+          : 'border-b border-ink-line bg-white/95 shadow-soft backdrop-blur-md'
       }`}
     >
       <nav className="container-page flex h-[68px] items-center gap-4">
         <Link
           href="/"
-          className="flex shrink-0 items-center rounded-xl bg-white px-2.5 py-1.5"
+          className={`flex shrink-0 items-center transition-all ${
+            transparent ? 'rounded-xl bg-white px-2.5 py-1.5 shadow-card' : ''
+          }`}
         >
           <Image
             src="/trylinqr.png"
             alt="TryLinqr"
-            width={140}
-            height={38}
+            width={150}
+            height={42}
             priority
-            className="h-7 w-auto sm:h-8"
+            className={transparent ? 'h-7 w-auto sm:h-8' : 'h-9 w-auto sm:h-10'}
           />
         </Link>
 
         <div className="hidden items-center gap-1 lg:flex">
-          <NavLink href="/explore" label="Explore" active={pathname === '/explore'} />
+          <NavLink
+            href="/explore"
+            label="Explore"
+            active={pathname === '/explore'}
+            transparent={transparent}
+          />
           <div
             className="relative"
             onMouseEnter={() => setCats(true)}
             onMouseLeave={() => setCats(false)}
           >
-            <button className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold text-white/75 transition-colors hover:text-white">
+            <button
+              className={`flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                transparent
+                  ? 'text-white/85 hover:text-white'
+                  : 'text-obsidian/75 hover:text-brand-700'
+              }`}
+            >
               Categories
               <ChevronDown className="h-3.5 w-3.5" />
             </button>
@@ -110,33 +124,53 @@ export default function Navbar() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
-                  className="absolute left-0 top-full grid w-[420px] grid-cols-2 gap-1 rounded-2xl border border-white/10 bg-ink-card p-2 shadow-2xl"
+                  className="absolute left-0 top-full grid w-[420px] grid-cols-2 gap-1 rounded-2xl border border-ink-line bg-white p-2 shadow-elevated"
                 >
-                  {CATEGORIES.map((c) => (
-                    <Link
-                      key={c.slug}
-                      href={`/categories/${c.slug}`}
-                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-white/75 hover:bg-white/5 hover:text-brand-400"
-                    >
-                      <span className="text-base">{c.emoji}</span>
-                      {c.label}
-                    </Link>
-                  ))}
+                  {CATEGORIES.map((c) => {
+                    const Icon = c.icon;
+                    return (
+                      <Link
+                        key={c.slug}
+                        href={`/categories/${c.slug}`}
+                        className="group flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-obsidian/80 hover:bg-pearl hover:text-brand-700"
+                      >
+                        <span
+                          className="grid h-7 w-7 place-items-center rounded-lg"
+                          style={{ background: `${c.color}1F`, color: c.color }}
+                        >
+                          <Icon className="h-3.5 w-3.5" strokeWidth={2.2} />
+                        </span>
+                        {c.label}
+                      </Link>
+                    );
+                  })}
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
-          <NavLink href="/explore?price=free" label="Free Events" />
+          <NavLink
+            href="/explore?price=free"
+            label="Free Events"
+            transparent={transparent}
+          />
         </div>
 
         <form onSubmit={submitSearch} className="ml-auto hidden flex-1 lg:block">
           <div className="relative mx-auto max-w-sm">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/45" />
+            <Search
+              className={`pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${
+                transparent ? 'text-white/55' : 'text-ink-muted'
+              }`}
+            />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search events, cities, organizers…"
-              className="w-full rounded-xl border border-white/10 bg-white/10 py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-white/45 backdrop-blur focus:border-brand-500 focus:bg-white/15 focus:outline-none"
+              className={`w-full rounded-xl py-2.5 pl-9 pr-3 text-sm transition-colors focus:outline-none focus:ring-2 ${
+                transparent
+                  ? 'border border-white/15 bg-white/10 text-white placeholder:text-white/55 backdrop-blur-md focus:border-white/40 focus:bg-white/20 focus:ring-white/20'
+                  : 'border border-ink-line bg-pearl text-obsidian placeholder:text-ink-muted focus:border-brand-700 focus:bg-white focus:ring-brand-700/15'
+              }`}
             />
           </div>
         </form>
@@ -146,11 +180,15 @@ export default function Navbar() {
             <>
               <Link
                 href="/notifications"
-                className="relative grid h-10 w-10 place-items-center rounded-xl text-white/80 hover:bg-white/10"
+                className={`relative grid h-10 w-10 place-items-center rounded-xl ${
+                  transparent
+                    ? 'text-white/85 hover:bg-white/15'
+                    : 'text-obsidian/75 hover:bg-pearl'
+                }`}
               >
                 <Bell className="h-5 w-5" />
                 {unread > 0 && (
-                  <span className="absolute right-1.5 top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-500 px-1 text-[10px] font-bold text-white">
+                  <span className="absolute right-1.5 top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-700 px-1 text-[10px] font-bold text-white">
                     {unread}
                   </span>
                 )}
@@ -158,13 +196,17 @@ export default function Navbar() {
               <div className="relative hidden lg:block">
                 <button
                   onClick={() => setMenu((m) => !m)}
-                  className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 py-1.5 pl-1.5 pr-3 hover:bg-white/10"
+                  className={`flex items-center gap-2 rounded-xl border py-1.5 pl-1.5 pr-3 ${
+                    transparent
+                      ? 'border-white/15 bg-white/10 text-white backdrop-blur-md hover:bg-white/20'
+                      : 'border-ink-line bg-white text-obsidian hover:bg-pearl'
+                  }`}
                 >
                   <Avatar user={session.user} />
-                  <span className="max-w-[100px] truncate text-sm font-semibold text-white">
+                  <span className="max-w-[100px] truncate text-sm font-semibold">
                     {session.user.name}
                   </span>
-                  <ChevronDown className="h-3.5 w-3.5 text-white/50" />
+                  <ChevronDown className="h-3.5 w-3.5 opacity-60" />
                 </button>
                 <AnimatePresence>
                   {menu && (
@@ -172,10 +214,10 @@ export default function Navbar() {
                       initial={{ opacity: 0, y: 8, scale: 0.97 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                      className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-white/10 bg-ink-card p-1.5 shadow-2xl"
+                      className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-ink-line bg-white p-1.5 shadow-elevated"
                     >
-                      <div className="border-b border-white/10 px-3 py-2">
-                        <p className="text-sm font-semibold text-white">
+                      <div className="border-b border-ink-line px-3 py-2">
+                        <p className="text-sm font-semibold text-obsidian">
                           {session.user.name}
                         </p>
                         <p className="truncate text-xs text-ink-muted">
@@ -191,9 +233,15 @@ export default function Navbar() {
                       <MenuItem href="/profile" icon={User}>
                         Profile
                       </MenuItem>
+                      <MenuItem href="/bike-shipping" icon={Truck}>
+                        Bike Shipping
+                      </MenuItem>
+                      <MenuItem href="/support" icon={LifeBuoy}>
+                        Help & Support
+                      </MenuItem>
                       <button
                         onClick={() => signOut({ callbackUrl: '/' })}
-                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-brand-400 hover:bg-white/5"
+                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-brand-700 hover:bg-brand-700/[0.06]"
                       >
                         <LogOut className="h-4 w-4" /> Sign out
                       </button>
@@ -206,13 +254,17 @@ export default function Navbar() {
             <div className="hidden items-center gap-2 lg:flex">
               <Link
                 href="/login"
-                className="rounded-xl px-4 py-2 text-sm font-semibold text-white/80 hover:text-white"
+                className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+                  transparent
+                    ? 'text-white/85 hover:text-white'
+                    : 'text-obsidian/75 hover:text-brand-700'
+                }`}
               >
                 Log in
               </Link>
               <Link
                 href="/register"
-                className="rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-glow transition-all hover:bg-brand-600 hover:-translate-y-0.5"
+                className="rounded-xl bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-glow transition-all hover:bg-brand-800 hover:-translate-y-0.5"
               >
                 Sign up
               </Link>
@@ -221,7 +273,11 @@ export default function Navbar() {
 
           <button
             onClick={() => setOpen(true)}
-            className="grid h-10 w-10 place-items-center rounded-xl text-white hover:bg-white/10 lg:hidden"
+            className={`grid h-10 w-10 place-items-center rounded-xl lg:hidden ${
+              transparent
+                ? 'text-white hover:bg-white/15'
+                : 'text-obsidian hover:bg-pearl'
+            }`}
           >
             <Menu className="h-5 w-5" />
           </button>
@@ -236,35 +292,33 @@ export default function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
-              className="fixed inset-0 z-50 bg-black/60 lg:hidden"
+              className="fixed inset-0 z-50 bg-obsidian/50 lg:hidden"
             />
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-              className="fixed right-0 top-0 z-50 flex h-full w-[84vw] max-w-xs flex-col gap-1 border-l border-white/10 bg-ink-soft p-4 lg:hidden"
+              className="fixed right-0 top-0 z-50 flex h-full w-[84vw] max-w-xs flex-col gap-1 bg-white p-4 lg:hidden"
             >
               <div className="mb-3 flex items-center justify-between">
-                <div className="rounded-lg bg-white px-2.5 py-1.5">
-                  <Image
-                    src="/trylinqr.png"
-                    alt="TryLinqr"
-                    width={120}
-                    height={32}
-                    className="h-6 w-auto"
-                  />
-                </div>
+                <Image
+                  src="/trylinqr.png"
+                  alt="TryLinqr"
+                  width={130}
+                  height={36}
+                  className="h-8 w-auto"
+                />
                 <button
                   onClick={() => setOpen(false)}
-                  className="grid h-9 w-9 place-items-center rounded-lg text-white/70 hover:bg-white/10"
+                  className="grid h-9 w-9 place-items-center rounded-lg text-obsidian/70 hover:bg-pearl"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
               <form onSubmit={submitSearch} className="mb-2">
                 <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/45" />
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
                   <input
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
@@ -279,6 +333,9 @@ export default function Navbar() {
               <MobileItem href="/explore?price=free" icon={Sparkles}>
                 Free Events
               </MobileItem>
+              <MobileItem href="/bike-shipping" icon={Truck}>
+                Bike Shipping
+              </MobileItem>
               {session ? (
                 <>
                   <MobileItem href={dashHref} icon={LayoutDashboard}>
@@ -290,9 +347,12 @@ export default function Navbar() {
                   <MobileItem href="/profile" icon={User}>
                     Profile
                   </MobileItem>
+                  <MobileItem href="/support" icon={LifeBuoy}>
+                    Help & Support
+                  </MobileItem>
                   <button
                     onClick={() => signOut({ callbackUrl: '/' })}
-                    className="mt-2 flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-brand-400 hover:bg-white/5"
+                    className="mt-2 flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-brand-700 hover:bg-brand-700/[0.06]"
                   >
                     <LogOut className="h-4 w-4" /> Sign out
                   </button>
@@ -305,7 +365,7 @@ export default function Navbar() {
                   <Link href="/register" className="btn-primary w-full">
                     Sign up
                   </Link>
-                  <Link href="/admin-register" className="btn-secondary w-full">
+                  <Link href="/admin-register" className="btn-sand w-full">
                     Become an organizer
                   </Link>
                 </div>
@@ -318,17 +378,23 @@ export default function Navbar() {
   );
 }
 
-function NavLink({ href, label, active }) {
+function NavLink({ href, label, active, transparent }) {
+  const base = transparent
+    ? active
+      ? 'text-white'
+      : 'text-white/85 hover:text-white'
+    : active
+    ? 'text-brand-700'
+    : 'text-obsidian/75 hover:text-brand-700';
+  const underline = transparent ? 'bg-white' : 'bg-brand-700';
   return (
     <Link
       href={href}
-      className={`group relative rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-        active ? 'text-brand-400' : 'text-white/75 hover:text-white'
-      }`}
+      className={`group relative rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${base}`}
     >
       {label}
       <span
-        className={`absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-brand-500 transition-transform duration-200 ${
+        className={`absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full ${underline} transition-transform duration-200 ${
           active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
         }`}
       />
@@ -340,9 +406,9 @@ function MenuItem({ href, icon: Icon, children }) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white/85 hover:bg-white/5"
+      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-obsidian/85 hover:bg-pearl"
     >
-      <Icon className="h-4 w-4 text-white/45" />
+      <Icon className="h-4 w-4 text-ink-muted" />
       {children}
     </Link>
   );
@@ -352,9 +418,9 @@ function MobileItem({ href, icon: Icon, children }) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-white/85 hover:bg-white/5"
+      className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-obsidian/85 hover:bg-pearl"
     >
-      <Icon className="h-4 w-4 text-white/45" />
+      <Icon className="h-4 w-4 text-ink-muted" />
       {children}
     </Link>
   );
@@ -365,7 +431,7 @@ export function Avatar({ user, size = 30 }) {
     user?.avatar ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(
       user?.name || 'U'
-    )}&background=e11d2e&color=fff`;
+    )}&background=710014&color=fff`;
   return (
     <img
       src={src}

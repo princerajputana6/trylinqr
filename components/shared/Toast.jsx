@@ -35,18 +35,18 @@ export function ToastProvider({ children }) {
               exit={{ opacity: 0, x: 60 }}
               transition={{ type: 'spring', stiffness: 320, damping: 26 }}
               onClick={() => dismiss(t.id)}
-              className="pointer-events-auto flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-ink-soft p-3.5 shadow-2xl"
+              className="pointer-events-auto flex cursor-pointer items-start gap-3 rounded-xl border border-ink-line bg-white p-3.5 shadow-elevated"
             >
               {t.type === 'success' && (
-                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
               )}
               {t.type === 'error' && (
-                <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-brand-400" />
+                <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" />
               )}
               {t.type === 'info' && (
-                <Info className="mt-0.5 h-5 w-5 shrink-0 text-sky-400" />
+                <Info className="mt-0.5 h-5 w-5 shrink-0 text-sand-500" />
               )}
-              <p className="text-sm text-white/90">{t.message}</p>
+              <p className="text-sm text-obsidian/90">{t.message}</p>
             </motion.div>
           ))}
         </AnimatePresence>

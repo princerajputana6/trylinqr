@@ -78,7 +78,7 @@ export default function AdminApprovalsPage() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-brand-400" />
+                    <Building2 className="h-5 w-5 text-brand-700" />
                     <h3 className="text-lg font-bold">{u.orgName}</h3>
                   </div>
                   <p className="mt-1 text-sm text-white/80">{u.name}</p>
@@ -110,7 +110,7 @@ export default function AdminApprovalsPage() {
                   <button
                     onClick={() => reject(u._id)}
                     disabled={busy === u._id}
-                    className="btn-outline text-brand-400"
+                    className="btn-outline text-brand-700"
                   >
                     <X className="h-4 w-4" /> Reject
                   </button>

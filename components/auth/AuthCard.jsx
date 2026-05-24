@@ -13,10 +13,7 @@ export default function AuthCard({ title, subtitle, children, footer }) {
         transition={{ duration: 0.4 }}
         className="card w-full max-w-md p-7"
       >
-        <Link
-          href="/"
-          className="mx-auto mb-6 flex w-fit items-center justify-center rounded-xl bg-white px-4 py-2.5"
-        >
+        <Link href="/" className="mx-auto mb-6 flex w-fit items-center justify-center">
           <Image
             src="/trylinqr.png"
             alt="TryLinqr"
@@ -26,7 +23,9 @@ export default function AuthCard({ title, subtitle, children, footer }) {
             className="h-9 w-auto"
           />
         </Link>
-        <h1 className="text-center text-2xl font-extrabold">{title}</h1>
+        <h1 className="text-center font-display text-2xl font-extrabold text-obsidian">
+          {title}
+        </h1>
         {subtitle && (
           <p className="mt-1 text-center text-sm text-ink-muted">{subtitle}</p>
         )}

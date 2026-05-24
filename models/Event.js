@@ -12,6 +12,30 @@ const TicketTierSchema = new mongoose.Schema(
   { _id: true }
 );
 
+// Used only when category === 'bike-ride'. Captures the structured
+// info bike-ride organizers typically advertise (meetup vs ride-off,
+// mandatory paperwork & gear, distance, fuel policy, etc.).
+const RideDetailsSchema = new mongoose.Schema(
+  {
+    meetupTime: { type: String },            // "05:00 AM"
+    rideStartTime: { type: String },         // "05:30 AM" (sharp)
+    rideTill: { type: String },              // "Panchgaon, Gurugram, HR"
+    distanceKm: { type: Number },
+    durationDays: { type: Number },          // for multi-day rides
+    difficulty: {
+      type: String,
+      enum: ['easy', 'moderate', 'challenging', 'expert'],
+    },
+    pillionAllowed: { type: Boolean, default: true },
+    mandatoryDocuments: [{ type: String }],  // RC, DL, Insurance, Pollution
+    mandatoryGears: [{ type: String }],      // Helmet, Gloves, Knee Guards…
+    fuelPolicy: { type: String },            // "Fuelled up — no fuel stops in-between"
+    inclusions: [{ type: String }],          // Stay, Breakfast, Dinner, Coordination…
+    rideNotes: { type: String },             // Ride-off note, group rules
+  },
+  { _id: false }
+);
+
 const EventSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
@@ -71,6 +95,7 @@ const EventSchema = new mongoose.Schema(
     ageRestriction: { type: String },
     dressCode: { type: String },
     cancellationPolicy: { type: String },
+    rideDetails: { type: RideDetailsSchema, default: undefined },
     totalViews: { type: Number, default: 0 },
     rating: { type: Number, default: 0 },
     reviewCount: { type: Number, default: 0 },

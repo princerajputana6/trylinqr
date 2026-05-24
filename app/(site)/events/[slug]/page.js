@@ -22,6 +22,7 @@ import ReviewSection from '@/components/events/ReviewSection';
 import Gallery from '@/components/events/Gallery';
 import ViewPing from '@/components/events/ViewPing';
 import EventCard from '@/components/events/EventCard';
+import RideDetails from '@/components/events/RideDetails';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,18 +61,24 @@ export default async function EventPage({ params }) {
       {/* banner */}
       <div className="relative h-[42vh] min-h-[300px] w-full overflow-hidden">
         <img src={banner} alt={event.title} className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/40 to-transparent" />
         <div className="container-page absolute inset-x-0 bottom-0 pb-6">
-          <span
-            className="chip text-white"
-            style={{ background: cat.color }}
-          >
-            {cat.emoji} {cat.label}
-          </span>
-          <h1 className="mt-3 max-w-3xl text-3xl font-extrabold md:text-4xl">
+          {(() => {
+            const CatIcon = cat.icon;
+            return (
+              <span
+                className="chip gap-1.5 text-white shadow-lg"
+                style={{ background: cat.color }}
+              >
+                <CatIcon className="h-3.5 w-3.5" strokeWidth={2.5} />
+                {cat.label}
+              </span>
+            );
+          })()}
+          <h1 className="mt-3 max-w-3xl font-display text-3xl font-extrabold text-white md:text-4xl">
             {event.title}
           </h1>
-          <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-white/70">
+          <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-white/80">
             <span className="flex items-center gap-1.5">
               <Calendar className="h-4 w-4" /> {formatDate(event.startDate, { weekday: 'long' })}
             </span>
@@ -102,19 +109,23 @@ export default async function EventPage({ params }) {
         <div className="space-y-8">
           <section>
             <h2 className="mb-3 text-xl font-bold">About this event</h2>
-            <p className="whitespace-pre-line text-white/80">
+            <p className="whitespace-pre-line text-obsidian/80">
               {event.description || 'No description provided.'}
             </p>
             {event.tags?.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
                 {event.tags.map((t) => (
-                  <span key={t} className="chip bg-white/5 text-white/70">
+                  <span key={t} className="chip border border-ink-line bg-pearl text-obsidian/70">
                     #{t}
                   </span>
                 ))}
               </div>
             )}
           </section>
+
+          {event.category === 'bike-ride' && event.rideDetails && (
+            <RideDetails ride={event.rideDetails} />
+          )}
 
           {(event.ageRestriction || event.dressCode || event.cancellationPolicy) && (
             <section className="grid gap-3 sm:grid-cols-3">

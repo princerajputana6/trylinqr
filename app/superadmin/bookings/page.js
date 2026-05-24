@@ -9,8 +9,8 @@ import { formatDateTime, formatCurrency } from '@/lib/utils';
 const STATUS_STYLE = {
   paid: 'bg-emerald-500/15 text-emerald-400',
   pending: 'bg-amber-500/15 text-amber-400',
-  failed: 'bg-brand-500/15 text-brand-400',
-  refunded: 'bg-white/10 text-ink-muted',
+  failed: 'bg-brand-500/15 text-brand-700',
+  refunded: 'bg-pearl text-ink-muted',
 };
 
 export default function SuperadminBookingsPage() {
@@ -73,7 +73,7 @@ export default function SuperadminBookingsPage() {
       <div className="card overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-white/10 text-left text-xs uppercase text-ink-muted">
+            <tr className="border-b border-ink-line text-left text-xs uppercase text-ink-muted">
               <th className="p-3">Code</th>
               <th className="p-3">Event</th>
               <th className="p-3">Customer</th>
@@ -92,7 +92,7 @@ export default function SuperadminBookingsPage() {
                 animate={{ opacity: 1 }}
                 className="border-b border-white/5"
               >
-                <td className="p-3 font-mono text-xs text-brand-400">
+                <td className="p-3 font-mono text-xs text-brand-700">
                   {b.bookingCode}
                 </td>
                 <td className="p-3">{b.event?.title || '—'}</td>

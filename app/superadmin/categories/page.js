@@ -32,30 +32,33 @@ export default function CategoriesPage() {
         picks one when creating an event.
       </p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {CATEGORIES.map((c, i) => (
-          <motion.div
-            key={c.slug}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: i * 0.04 }}
-            className="card flex items-center gap-4 p-5"
-            style={{ borderColor: `${c.color}40` }}
-          >
-            <div
-              className="grid h-12 w-12 place-items-center rounded-xl text-2xl"
-              style={{ background: `${c.color}22` }}
+        {CATEGORIES.map((c, i) => {
+          const Icon = c.icon;
+          return (
+            <motion.div
+              key={c.slug}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.04 }}
+              className="card flex items-center gap-4 p-5"
+              style={{ borderColor: `${c.color}40` }}
             >
-              {c.emoji}
-            </div>
-            <div>
-              <p className="font-bold">{c.label}</p>
-              <p className="text-xs text-ink-muted">
-                {counts[c.label] || 0} event
-                {(counts[c.label] || 0) !== 1 ? 's' : ''}
-              </p>
-            </div>
-          </motion.div>
-        ))}
+              <div
+                className="grid h-12 w-12 place-items-center rounded-xl"
+                style={{ background: `${c.color}22`, color: c.color }}
+              >
+                <Icon className="h-5 w-5" strokeWidth={2.2} />
+              </div>
+              <div>
+                <p className="font-bold text-obsidian">{c.label}</p>
+                <p className="text-xs text-ink-muted">
+                  {counts[c.label] || 0} event
+                  {(counts[c.label] || 0) !== 1 ? 's' : ''}
+                </p>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );

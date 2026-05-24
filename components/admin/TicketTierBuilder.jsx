@@ -33,7 +33,7 @@ export default function TicketTierBuilder({ tiers, setTiers }) {
               <button
                 type="button"
                 onClick={() => remove(i)}
-                className="text-brand-400 hover:text-brand-300"
+                className="text-brand-700 hover:text-brand-300"
               >
                 <Trash2 className="h-4 w-4" />
               </button>

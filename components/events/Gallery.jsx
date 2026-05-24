@@ -10,7 +10,7 @@ export default function Gallery({ images = [] }) {
 
   return (
     <div>
-      <h2 className="mb-3 text-xl font-bold">Gallery</h2>
+      <h2 className="mb-3 text-xl font-bold text-obsidian">Gallery</h2>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
         {images.map((src, i) => (
           <motion.button
@@ -33,7 +33,7 @@ export default function Gallery({ images = [] }) {
             onClick={() => setActive(null)}
             className="fixed inset-0 z-[90] grid place-items-center bg-black/90 p-4"
           >
-            <button className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-lg bg-white/10">
+            <button className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-lg bg-white/20 text-white backdrop-blur">
               <X className="h-5 w-5" />
             </button>
             <motion.img

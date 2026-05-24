@@ -54,7 +54,7 @@ function EventsInner() {
             className={`rounded-xl px-3 py-1.5 text-sm font-medium capitalize transition-colors ${
               status === f
                 ? 'bg-brand-500 text-white'
-                : 'bg-white/5 text-white/70 hover:bg-white/10'
+                : 'bg-white/5 text-white/70 hover:bg-pearl'
             }`}
           >
             {f}
@@ -72,6 +72,7 @@ function EventsInner() {
         <div className="space-y-3">
           {events.map((e, i) => {
             const cat = categoryBySlug(e.category);
+            const CatIcon = cat.icon;
             return (
               <motion.div
                 key={e._id}
@@ -93,13 +94,14 @@ function EventsInner() {
                     <h3 className="font-bold">{e.title}</h3>
                     <StatusBadge status={e.status} />
                     {e.isFeatured && (
-                      <span className="chip bg-amber-400/20 text-amber-400">
-                        ★ Featured
+                      <span className="chip gap-1 bg-sand-500/20 text-sand-700">
+                        <Star className="h-3 w-3 fill-sand-700" /> Featured
                       </span>
                     )}
                   </div>
-                  <p className="mt-0.5 text-xs text-ink-muted">
-                    {cat.emoji} {cat.label} · by{' '}
+                  <p className="mt-0.5 inline-flex items-center gap-1.5 text-xs text-ink-muted">
+                    <CatIcon className="h-3.5 w-3.5" style={{ color: cat.color }} />
+                    {cat.label} · by{' '}
                     {e.organizer?.orgName || e.organizer?.name} ·{' '}
                     {formatDate(e.startDate)}
                   </p>
@@ -143,7 +145,7 @@ function EventsInner() {
                       onClick={() =>
                         act(e._id, { status: 'cancelled' }, 'Event cancelled')
                       }
-                      className="btn-ghost px-3 py-1.5 text-xs text-brand-400"
+                      className="btn-ghost px-3 py-1.5 text-xs text-brand-700"
                     >
                       <X className="h-3.5 w-3.5" /> Cancel
                     </button>

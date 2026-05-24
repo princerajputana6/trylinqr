@@ -94,7 +94,7 @@ function CheckoutInner() {
         name: 'TryLinqr',
         description: event.title,
         order_id: order.orderId,
-        theme: { color: '#e63e62' },
+        theme: { color: '#710014' },
         handler: async (response) => {
           const verifyRes = await fetch('/api/payments/verify', {
             method: 'POST',
@@ -167,7 +167,7 @@ function CheckoutInner() {
                 : event.venue?.city || 'Online'}
             </p>
             <div className="flex items-center gap-1.5 text-sm">
-              <Ticket className="h-4 w-4 text-brand-400" />
+              <Ticket className="h-4 w-4 text-brand-700" />
               <span className="font-medium">{tier?.name}</span>
               <span className="text-ink-muted">× {qty}</span>
             </div>
@@ -184,7 +184,7 @@ function CheckoutInner() {
               muted
             />
           )}
-          <div className="my-3 border-t border-white/10" />
+          <div className="my-3 border-t border-ink-line" />
           <Row
             label="Total"
             value={subtotal === 0 ? 'FREE' : formatCurrency(subtotal)}

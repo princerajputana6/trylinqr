@@ -61,7 +61,7 @@ export default function UsersPage() {
               className={`rounded-xl px-3 py-1.5 text-sm font-medium transition-colors ${
                 role === r.v
                   ? 'bg-brand-500 text-white'
-                  : 'bg-white/5 text-white/70 hover:bg-white/10'
+                  : 'bg-white/5 text-white/70 hover:bg-pearl'
               }`}
             >
               {r.l}
@@ -85,7 +85,7 @@ export default function UsersPage() {
         <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 text-left text-xs uppercase text-ink-muted">
+              <tr className="border-b border-ink-line text-left text-xs uppercase text-ink-muted">
                 <th className="p-3">Name</th>
                 <th className="p-3">Email</th>
                 <th className="p-3">Role</th>
@@ -114,7 +114,7 @@ export default function UsersPage() {
                   <td className="p-3 capitalize">{u.role}</td>
                   <td className="p-3">
                     {u.isBanned ? (
-                      <span className="chip bg-brand-500/15 text-brand-400">
+                      <span className="chip bg-brand-500/15 text-brand-700">
                         Banned
                       </span>
                     ) : u.role === 'admin' && !u.isApproved ? (
@@ -135,7 +135,7 @@ export default function UsersPage() {
                       <button
                         onClick={() => toggleBan(u)}
                         className={`btn-outline px-3 py-1.5 text-xs ${
-                          u.isBanned ? '' : 'text-brand-400'
+                          u.isBanned ? '' : 'text-brand-700'
                         }`}
                       >
                         {u.isBanned ? (

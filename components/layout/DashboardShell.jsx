@@ -24,7 +24,7 @@ export default function DashboardShell({ title, nav, children }) {
             onClick={() => setOpen(false)}
             className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
               active
-                ? 'bg-brand-500/15 text-brand-400'
+                ? 'bg-brand-700 text-white shadow-glow-soft'
                 : 'text-white/70 hover:bg-white/5 hover:text-white'
             }`}
           >
@@ -37,14 +37,11 @@ export default function DashboardShell({ title, nav, children }) {
   );
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-pearl">
       <div className="flex">
-        {/* desktop sidebar */}
-        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-white/10 bg-ink-soft/50 p-4 lg:flex">
-          <Link
-            href="/"
-            className="mb-6 flex w-fit items-center rounded-xl bg-white px-3 py-2"
-          >
+        {/* desktop sidebar — obsidian dark */}
+        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-obsidian-line bg-obsidian p-4 lg:flex">
+          <Link href="/" className="mb-6 flex w-fit items-center rounded-xl bg-white px-3 py-2 shadow-card">
             <Image
               src="/trylinqr.png"
               alt="TryLinqr"
@@ -63,7 +60,7 @@ export default function DashboardShell({ title, nav, children }) {
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: '/' })}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-brand-400 hover:bg-white/5"
+              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-sand-400 hover:bg-white/5"
             >
               <LogOut className="h-4 w-4" /> Sign out
             </button>
@@ -71,14 +68,14 @@ export default function DashboardShell({ title, nav, children }) {
         </aside>
 
         <main className="min-w-0 flex-1">
-          <div className="sticky top-0 z-30 flex items-center gap-3 border-b border-white/10 bg-ink/90 px-4 py-3 backdrop-blur-xl lg:px-8">
+          <div className="sticky top-0 z-30 flex items-center gap-3 border-b border-ink-line bg-white/85 px-4 py-3 backdrop-blur-xl lg:px-8">
             <button
               onClick={() => setOpen(true)}
-              className="grid h-9 w-9 place-items-center rounded-lg hover:bg-white/5 lg:hidden"
+              className="grid h-9 w-9 place-items-center rounded-lg text-obsidian hover:bg-pearl lg:hidden"
             >
               <Menu className="h-5 w-5" />
             </button>
-            <h1 className="text-lg font-bold">{title}</h1>
+            <h1 className="font-display text-lg font-bold text-obsidian">{title}</h1>
           </div>
           <div className="p-4 lg:p-8">{children}</div>
         </main>
@@ -92,14 +89,14 @@ export default function DashboardShell({ title, nav, children }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
-              className="fixed inset-0 z-50 bg-black/60 lg:hidden"
+              className="fixed inset-0 z-50 bg-obsidian/60 lg:hidden"
             />
             <motion.aside
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-              className="fixed left-0 top-0 z-50 flex h-full w-64 flex-col border-r border-white/10 bg-ink-soft p-4 lg:hidden"
+              className="fixed left-0 top-0 z-50 flex h-full w-64 flex-col border-r border-obsidian-line bg-obsidian p-4 lg:hidden"
             >
               <div className="mb-6 flex items-center justify-between">
                 <div className="rounded-lg bg-white px-2.5 py-1.5">
@@ -113,7 +110,7 @@ export default function DashboardShell({ title, nav, children }) {
                 </div>
                 <button
                   onClick={() => setOpen(false)}
-                  className="grid h-9 w-9 place-items-center rounded-lg hover:bg-white/5"
+                  className="grid h-9 w-9 place-items-center rounded-lg text-white/70 hover:bg-white/10"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -121,7 +118,7 @@ export default function DashboardShell({ title, nav, children }) {
               {SidebarBody}
               <button
                 onClick={() => signOut({ callbackUrl: '/' })}
-                className="mt-auto flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-brand-400 hover:bg-white/5"
+                className="mt-auto flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-sand-400 hover:bg-white/5"
               >
                 <LogOut className="h-4 w-4" /> Sign out
               </button>

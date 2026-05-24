@@ -18,7 +18,7 @@ export default function Stars({ value = 0, size = 14, onChange }) {
             className={
               n <= Math.round(value)
                 ? 'fill-amber-400 text-amber-400'
-                : 'text-white/20'
+                : 'text-obsidian/20'
             }
           />
         </button>

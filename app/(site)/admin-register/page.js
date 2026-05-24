@@ -37,7 +37,7 @@ export default function AdminRegisterPage() {
   if (done) {
     return (
       <AuthCard
-        title="Application received 🎉"
+        title="Application received"
         subtitle="Your organizer account is pending approval"
       >
         <p className="text-center text-sm text-white/80">

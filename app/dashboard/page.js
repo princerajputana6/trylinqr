@@ -81,7 +81,7 @@ export default function DashboardOverview() {
           <h2 className="text-lg font-bold">Recent events</h2>
           <Link
             href="/dashboard/events"
-            className="text-sm text-brand-400 hover:underline"
+            className="text-sm text-brand-700 hover:underline"
           >
             View all
           </Link>

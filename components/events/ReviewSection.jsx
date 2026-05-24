@@ -102,7 +102,7 @@ export default function ReviewSection({ eventId, initialReviews }) {
                 </div>
               </div>
               {r.comment && (
-                <p className="mt-2 text-sm text-white/80">{r.comment}</p>
+                <p className="mt-2 text-sm text-obsidian/80">{r.comment}</p>
               )}
             </motion.div>
           ))}

@@ -122,7 +122,7 @@ export default function DashboardBookingsPage() {
         <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 text-left text-xs uppercase text-ink-muted">
+              <tr className="border-b border-ink-line text-left text-xs uppercase text-ink-muted">
                 <th className="p-3">Code</th>
                 <th className="p-3">Customer</th>
                 <th className="p-3">Tier</th>
@@ -141,7 +141,7 @@ export default function DashboardBookingsPage() {
                   animate={{ opacity: 1 }}
                   className="border-b border-white/5"
                 >
-                  <td className="p-3 font-mono text-xs text-brand-400">
+                  <td className="p-3 font-mono text-xs text-brand-700">
                     {b.bookingCode}
                   </td>
                   <td className="p-3">

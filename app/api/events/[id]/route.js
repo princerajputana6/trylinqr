@@ -63,6 +63,7 @@ export async function PUT(req, { params }) {
       'ageRestriction',
       'dressCode',
       'cancellationPolicy',
+      'rideDetails',
     ];
     for (const f of fields) {
       if (body[f] !== undefined) event[f] = body[f];

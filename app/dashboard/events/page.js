@@ -144,7 +144,7 @@ export default function MyEventsPage() {
                 {e.status !== 'cancelled' && (
                   <button
                     onClick={() => cancel(e)}
-                    className="btn-ghost text-sm text-brand-400"
+                    className="btn-ghost text-sm text-brand-700"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>

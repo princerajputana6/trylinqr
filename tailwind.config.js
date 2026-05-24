@@ -1,67 +1,83 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    './app/**/*.{js,jsx}',
-    './components/**/*.{js,jsx}',
-  ],
+  content: ['./app/**/*.{js,jsx}', './components/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
-        // Primary red — pulled from the TryLinqr logo
+        // Crimson Depth — primary brand
         brand: {
-          50: '#fef2f3',
-          100: '#fce0e2',
-          200: '#f9c5c9',
-          300: '#f499aa',
-          400: '#ec5b66',
-          500: '#e11d2e',
-          600: '#c8132a',
-          700: '#a51025',
-          800: '#891124',
-          900: '#741322',
+          50: '#fdf3f4',
+          100: '#fbe3e6',
+          200: '#f5c3c8',
+          300: '#ec98a0',
+          400: '#dd6571',
+          500: '#a01524',
+          600: '#8a0c1b',
+          700: '#710014', // primary
+          800: '#5a000f',
+          900: '#42000b',
         },
-        // Secondary royal blue
-        royal: {
-          50: '#eef3ff',
-          100: '#dce6ff',
-          200: '#c0d2ff',
-          300: '#97b3ff',
-          400: '#6c8bfb',
-          500: '#3b5bf0',
-          600: '#2540d6',
-          700: '#1e32ad',
-          800: '#1d2e8a',
-          900: '#1d2c6e',
+        // Warm Sand — premium accent
+        sand: {
+          50: '#faf6f1',
+          100: '#f1e9dd',
+          200: '#e4d2bd',
+          300: '#d4b89a',
+          400: '#c5a380',
+          500: '#b38f6f', // primary
+          600: '#9a795d',
+          700: '#7c624c',
+          800: '#5e4a3a',
+          900: '#403328',
         },
-        // Deep navy surfaces
+        // Obsidian — dark cinematic surfaces (footer, CTA, banners)
+        obsidian: {
+          DEFAULT: '#161616',
+          soft: '#1f1f22',
+          line: 'rgba(255,255,255,0.08)',
+        },
+        // Pearl — light page surfaces (ink kept as alias to avoid breakage)
+        pearl: '#f2f1ed',
         ink: {
-          DEFAULT: '#070b16',
-          soft: '#0e1426',
-          card: '#121a30',
-          line: '#1f2942',
-          muted: '#8a93ac',
+          DEFAULT: '#f2f1ed',          // page background utility (`bg-ink`)
+          soft: '#ffffff',             // raised surfaces
+          card: '#ffffff',             // cards
+          line: 'rgba(22,22,22,0.08)', // hairline border
+          muted: '#6b6b73',            // muted text
         },
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Plus Jakarta Sans', 'ui-sans-serif'],
       },
       boxShadow: {
-        glow: '0 20px 60px -15px rgba(225,29,46,0.45)',
-        'glow-blue': '0 20px 60px -15px rgba(59,91,240,0.45)',
-        soft: '0 8px 30px rgba(0,0,0,0.35)',
+        glow: '0 22px 50px -22px rgba(113,0,20,0.45)',
+        'glow-soft': '0 16px 40px -18px rgba(113,0,20,0.28)',
+        soft: '0 12px 32px rgba(22,22,22,0.10)',
+        card: '0 10px 30px -14px rgba(22,22,22,0.18)',
+        elevated: '0 30px 60px -24px rgba(22,22,22,0.25)',
+      },
+      backgroundImage: {
+        'brand-gradient': 'linear-gradient(135deg, #710014 0%, #a01524 100%)',
+        'sand-gradient': 'linear-gradient(135deg, #b38f6f 0%, #d4b89a 100%)',
+        'radial-spot':
+          'radial-gradient(60% 50% at 50% 0%, rgba(113,0,20,0.10) 0%, transparent 70%)',
       },
       keyframes: {
-        shimmer: {
-          '100%': { transform: 'translateX(100%)' },
-        },
-        'float-slow': {
+        shimmer: { '100%': { transform: 'translateX(100%)' } },
+        'float-y': {
           '0%,100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-14px)' },
+          '50%': { transform: 'translateY(-12px)' },
+        },
+        pulseDot: {
+          '0%,100%': { transform: 'scale(1)', opacity: 1 },
+          '50%': { transform: 'scale(1.6)', opacity: 0.4 },
         },
       },
       animation: {
         shimmer: 'shimmer 1.5s infinite',
-        'float-slow': 'float-slow 6s ease-in-out infinite',
+        'float-y': 'float-y 6s ease-in-out infinite',
+        'pulse-dot': 'pulseDot 1.6s ease-in-out infinite',
       },
     },
   },

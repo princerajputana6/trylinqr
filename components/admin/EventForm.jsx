@@ -3,13 +3,34 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Bike,
+  ShieldCheck,
+  HardHat,
+  Fuel,
+  Mountain,
+  Users,
+  ClipboardList,
+} from 'lucide-react';
 import ImageUploader from '@/components/admin/ImageUploader';
 import TicketTierBuilder from '@/components/admin/TicketTierBuilder';
-import { CATEGORIES, CITIES } from '@/lib/constants';
+import {
+  CATEGORIES,
+  CITIES,
+  RIDE_DOCUMENTS,
+  RIDE_GEARS,
+  RIDE_DIFFICULTY,
+} from '@/lib/constants';
 import { useToast } from '@/components/shared/Toast';
 
-const STEPS = ['Basics', 'Date & Venue', 'Media', 'Tickets', 'Policies'];
+function buildSteps(category) {
+  const steps = ['Basics', 'Date & Venue', 'Media', 'Tickets', 'Policies'];
+  if (category === 'bike-ride') steps.splice(2, 0, 'Ride Details');
+  return steps;
+}
 
 function toDateInput(d) {
   if (!d) return '';
@@ -50,22 +71,51 @@ export default function EventForm({ initial, eventId }) {
     ageRestriction: initial?.ageRestriction || '',
     dressCode: initial?.dressCode || '',
     cancellationPolicy: initial?.cancellationPolicy || '',
+    rideDetails: initial?.rideDetails || {
+      meetupTime: '',
+      rideStartTime: '',
+      rideTill: '',
+      distanceKm: '',
+      durationDays: '',
+      difficulty: '',
+      pillionAllowed: true,
+      mandatoryDocuments: [...RIDE_DOCUMENTS],
+      mandatoryGears: ['Helmet', 'Gloves'],
+      fuelPolicy: '',
+      inclusions: [],
+      rideNotes: '',
+    },
   });
+
+  const STEPS = buildSteps(form.category);
+  const current = STEPS[step] || STEPS[0];
+  // clamp step if category change shrinks the array
+  if (step > STEPS.length - 1) setStep(STEPS.length - 1);
 
   const set = (key, value) => setForm((f) => ({ ...f, [key]: value }));
   const setVenue = (key, value) =>
     setForm((f) => ({ ...f, venue: { ...f.venue, [key]: value } }));
+  const setRide = (key, value) =>
+    setForm((f) => ({ ...f, rideDetails: { ...f.rideDetails, [key]: value } }));
+  const toggleInList = (key, value) =>
+    setForm((f) => {
+      const cur = f.rideDetails[key] || [];
+      const next = cur.includes(value)
+        ? cur.filter((v) => v !== value)
+        : [...cur, value];
+      return { ...f, rideDetails: { ...f.rideDetails, [key]: next } };
+    });
 
   const validateStep = () => {
-    if (step === 0 && !form.title.trim()) {
+    if (current === 'Basics' && !form.title.trim()) {
       toast('Event title is required', 'error');
       return false;
     }
-    if (step === 1 && !form.startDate) {
+    if (current === 'Date & Venue' && !form.startDate) {
       toast('Start date is required', 'error');
       return false;
     }
-    if (step === 3) {
+    if (current === 'Tickets') {
       if (form.ticketTiers.some((t) => !t.name.trim())) {
         toast('Every ticket tier needs a name', 'error');
         return false;
@@ -81,7 +131,19 @@ export default function EventForm({ initial, eventId }) {
   const submit = async (publish) => {
     if (!validateStep()) return;
     setBusy(true);
-    const payload = { ...form, publish };
+    const cleaned = { ...form };
+    if (cleaned.category !== 'bike-ride') {
+      cleaned.rideDetails = null;
+    } else {
+      // coerce numbers
+      const r = cleaned.rideDetails;
+      cleaned.rideDetails = {
+        ...r,
+        distanceKm: r.distanceKm ? Number(r.distanceKm) : undefined,
+        durationDays: r.durationDays ? Number(r.durationDays) : undefined,
+      };
+    }
+    const payload = { ...cleaned, publish };
     const res = await fetch(
       eventId ? `/api/events/${eventId}` : '/api/events',
       {
@@ -89,7 +151,7 @@ export default function EventForm({ initial, eventId }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(
           eventId
-            ? { ...form, status: publish ? 'pending' : 'draft' }
+            ? { ...cleaned, status: publish ? 'pending' : 'draft' }
             : payload
         ),
       }
@@ -120,7 +182,7 @@ export default function EventForm({ initial, eventId }) {
                   i < step
                     ? 'bg-brand-500 text-white'
                     : i === step
-                    ? 'bg-brand-500/20 text-brand-400 ring-2 ring-brand-500'
+                    ? 'bg-brand-500/20 text-brand-700 ring-2 ring-brand-500'
                     : 'bg-white/5 text-ink-muted'
                 }`}
               >
@@ -133,7 +195,7 @@ export default function EventForm({ initial, eventId }) {
             {i < STEPS.length - 1 && (
               <div
                 className={`mx-1 h-0.5 flex-1 ${
-                  i < step ? 'bg-brand-500' : 'bg-white/10'
+                  i < step ? 'bg-brand-500' : 'bg-pearl'
                 }`}
               />
             )}
@@ -151,7 +213,7 @@ export default function EventForm({ initial, eventId }) {
             transition={{ duration: 0.25 }}
             className="space-y-4"
           >
-            {step === 0 && (
+            {current === 'Basics' && (
               <>
                 <h2 className="text-lg font-bold">Basic information</h2>
                 <div>
@@ -172,7 +234,7 @@ export default function EventForm({ initial, eventId }) {
                     >
                       {CATEGORIES.map((c) => (
                         <option key={c.slug} value={c.slug}>
-                          {c.emoji} {c.label}
+                          {c.label}
                         </option>
                       ))}
                     </select>
@@ -215,7 +277,7 @@ export default function EventForm({ initial, eventId }) {
               </>
             )}
 
-            {step === 1 && (
+            {current === 'Date & Venue' && (
               <>
                 <h2 className="text-lg font-bold">Date & venue</h2>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -327,7 +389,203 @@ export default function EventForm({ initial, eventId }) {
               </>
             )}
 
-            {step === 2 && (
+            {current === 'Ride Details' && (
+              <>
+                <div className="flex items-center gap-2">
+                  <Bike className="h-5 w-5 text-brand-700" />
+                  <h2 className="text-lg font-bold">Ride details</h2>
+                </div>
+                <p className="text-sm text-obsidian/65">
+                  These show up on the event page so riders know exactly what
+                  to bring and what to expect.
+                </p>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="label">Meetup time</label>
+                    <input
+                      type="time"
+                      className="input"
+                      value={form.rideDetails.meetupTime}
+                      onChange={(e) => setRide('meetupTime', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Ride starts (sharp)</label>
+                    <input
+                      type="time"
+                      className="input"
+                      value={form.rideDetails.rideStartTime}
+                      onChange={(e) => setRide('rideStartTime', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="label">Ride till (destination)</label>
+                  <input
+                    className="input"
+                    placeholder="e.g. Panchgaon, Gurugram, HR"
+                    value={form.rideDetails.rideTill}
+                    onChange={(e) => setRide('rideTill', e.target.value)}
+                  />
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div>
+                    <label className="label">Distance (km)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="input"
+                      placeholder="e.g. 65"
+                      value={form.rideDetails.distanceKm}
+                      onChange={(e) => setRide('distanceKm', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Duration (days)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="input"
+                      placeholder="1 for day rides"
+                      value={form.rideDetails.durationDays}
+                      onChange={(e) => setRide('durationDays', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Difficulty</label>
+                    <select
+                      className="input"
+                      value={form.rideDetails.difficulty}
+                      onChange={(e) => setRide('difficulty', e.target.value)}
+                    >
+                      <option value="">— Pick one —</option>
+                      {RIDE_DIFFICULTY.map((d) => (
+                        <option key={d.value} value={d.value}>
+                          {d.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-ink-line bg-pearl p-4">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-obsidian">
+                    <ShieldCheck className="h-4 w-4 text-brand-700" /> Mandatory
+                    documents
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {RIDE_DOCUMENTS.map((doc) => {
+                      const active =
+                        form.rideDetails.mandatoryDocuments.includes(doc);
+                      return (
+                        <button
+                          type="button"
+                          key={doc}
+                          onClick={() => toggleInList('mandatoryDocuments', doc)}
+                          className={`chip border ${
+                            active
+                              ? 'border-brand-700 bg-brand-700 text-white'
+                              : 'border-ink-line bg-white text-obsidian/75'
+                          }`}
+                        >
+                          {doc}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-ink-line bg-pearl p-4">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-obsidian">
+                    <HardHat className="h-4 w-4 text-brand-700" /> Mandatory gear
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {RIDE_GEARS.map((g) => {
+                      const active =
+                        form.rideDetails.mandatoryGears.includes(g);
+                      return (
+                        <button
+                          type="button"
+                          key={g}
+                          onClick={() => toggleInList('mandatoryGears', g)}
+                          className={`chip border ${
+                            active
+                              ? 'border-brand-700 bg-brand-700 text-white'
+                              : 'border-ink-line bg-white text-obsidian/75'
+                          }`}
+                        >
+                          {g}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <label className="mt-3 inline-flex items-center gap-2 text-sm text-obsidian/75">
+                    <input
+                      type="checkbox"
+                      checked={form.rideDetails.pillionAllowed}
+                      onChange={(e) =>
+                        setRide('pillionAllowed', e.target.checked)
+                      }
+                    />
+                    Pillion rider allowed
+                  </label>
+                </div>
+
+                <div>
+                  <label className="label flex items-center gap-2">
+                    <Fuel className="h-4 w-4 text-brand-700" /> Fuel policy
+                  </label>
+                  <input
+                    className="input"
+                    placeholder="e.g. Fuelled up — no fuel stops in-between"
+                    value={form.rideDetails.fuelPolicy}
+                    onChange={(e) => setRide('fuelPolicy', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="label flex items-center gap-2">
+                    <Users className="h-4 w-4 text-brand-700" /> Inclusions
+                    <span className="text-xs font-normal text-ink-muted">
+                      (multi-day rides — comma separated)
+                    </span>
+                  </label>
+                  <input
+                    className="input"
+                    placeholder="e.g. 2 Nights Stay, Breakfast & Dinner, Group Ride, Ride Coordination"
+                    value={(form.rideDetails.inclusions || []).join(', ')}
+                    onChange={(e) =>
+                      setRide(
+                        'inclusions',
+                        e.target.value
+                          .split(',')
+                          .map((s) => s.trim())
+                          .filter(Boolean)
+                      )
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="label flex items-center gap-2">
+                    <ClipboardList className="h-4 w-4 text-brand-700" /> Ride
+                    notes
+                  </label>
+                  <textarea
+                    rows={3}
+                    className="input resize-none"
+                    placeholder="e.g. The ride will leave at ride-off time, leaving behind anyone who isn't there. Live location will be shared on the main group for catching up later."
+                    value={form.rideDetails.rideNotes}
+                    onChange={(e) => setRide('rideNotes', e.target.value)}
+                  />
+                </div>
+              </>
+            )}
+
+            {current === 'Media' && (
               <>
                 <h2 className="text-lg font-bold">Media</h2>
                 <ImageUploader
@@ -352,7 +610,7 @@ export default function EventForm({ initial, eventId }) {
               </>
             )}
 
-            {step === 3 && (
+            {current === 'Tickets' && (
               <>
                 <h2 className="text-lg font-bold">Ticket tiers</h2>
                 <TicketTierBuilder
@@ -362,7 +620,7 @@ export default function EventForm({ initial, eventId }) {
               </>
             )}
 
-            {step === 4 && (
+            {current === 'Policies' && (
               <>
                 <h2 className="text-lg font-bold">Policies & publish</h2>
                 <div>

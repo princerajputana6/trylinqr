@@ -8,6 +8,7 @@ import {
   Ticket,
   Grid3x3,
   Settings,
+  LifeBuoy,
 } from 'lucide-react';
 import Protected from '@/components/auth/Protected';
 import DashboardShell from '@/components/layout/DashboardShell';
@@ -18,6 +19,7 @@ const NAV = [
   { href: '/superadmin/events', label: 'All Events', icon: CalendarDays },
   { href: '/superadmin/customers', label: 'Users', icon: Users },
   { href: '/superadmin/bookings', label: 'Bookings', icon: Ticket },
+  { href: '/superadmin/support', label: 'Support tickets', icon: LifeBuoy },
   { href: '/superadmin/categories', label: 'Categories', icon: Grid3x3 },
   { href: '/superadmin/settings', label: 'Settings', icon: Settings },
 ];

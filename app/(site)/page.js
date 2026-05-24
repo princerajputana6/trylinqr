@@ -1,13 +1,19 @@
-import Link from 'next/link';
-import HeroSection from '@/components/home/HeroSection';
+import HeroCarousel from '@/components/home/HeroCarousel';
+import FeaturedList from '@/components/home/FeaturedList';
 import CategoryGrid from '@/components/home/CategoryGrid';
 import EventRow from '@/components/home/EventRow';
-import AnimatedCounter from '@/components/shared/AnimatedCounter';
+import StatsSection from '@/components/home/StatsSection';
+import FestivalBanner from '@/components/home/FestivalBanner';
+import PopularOrganizers from '@/components/home/PopularOrganizers';
+import WhyChooseUs from '@/components/home/WhyChooseUs';
+import Testimonials from '@/components/home/Testimonials';
+import OrganizerCTA from '@/components/home/OrganizerCTA';
 import {
   getFeaturedEvents,
   getWeekendEvents,
   getTrendingEvents,
   getRecentEvents,
+  getPopularOrganizers,
   getPlatformCounts,
 } from '@/lib/data';
 
@@ -18,56 +24,53 @@ export default async function HomePage() {
     weekend = [],
     trending = [],
     recent = [],
+    organizers = [],
     counts = { events: 0, organizers: 0 };
   try {
-    [featured, weekend, trending, recent, counts] = await Promise.all([
-      getFeaturedEvents(),
-      getWeekendEvents(),
-      getTrendingEvents(),
-      getRecentEvents(6),
-      getPlatformCounts(),
-    ]);
+    [featured, weekend, trending, recent, organizers, counts] =
+      await Promise.all([
+        getFeaturedEvents(),
+        getWeekendEvents(),
+        getTrendingEvents(),
+        getRecentEvents(6),
+        getPopularOrganizers(6),
+        getPlatformCounts(),
+      ]);
   } catch (e) {
     console.error('home data error', e);
   }
 
+  // Hero — prefer featured then recent (need at least the banner image)
+  const heroSlides = [...featured, ...recent]
+    .filter((e) => e && e.bannerImage)
+    .reduce((acc, e) => {
+      if (!acc.find((x) => String(x._id) === String(e._id))) acc.push(e);
+      return acc;
+    }, [])
+    .slice(0, 6);
+
+  const spotlight = featured[0] || trending[0] || recent[0];
+  // Merge featured + weekend + trending so the Featured list always has plenty
+  const seen = new Set();
+  const upcoming = [...featured, ...weekend, ...trending, ...recent]
+    .filter((e) => e && !seen.has(String(e._id)) && seen.add(String(e._id)))
+    .slice(0, 8);
+
   return (
     <>
-      <HeroSection events={recent.length ? recent : featured} />
+      <HeroCarousel events={heroSlides.length ? heroSlides : recent} />
 
-      <section className="container-page mt-12">
-        <div className="card grid grid-cols-2 gap-4 p-6 sm:grid-cols-4">
-          {[
-            { label: 'Live events', value: counts.events, suffix: '+' },
-            { label: 'Organizers', value: counts.organizers, suffix: '+' },
-            { label: 'Categories', value: 12 },
-            { label: 'Cities', value: 12 },
-          ].map((s) => (
-            <div key={s.label} className="text-center">
-              <div className="text-2xl font-extrabold text-brand-400 sm:text-3xl">
-                <AnimatedCounter value={s.value} suffix={s.suffix || ''} />
-              </div>
-              <div className="mt-1 text-xs text-ink-muted">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <StatsSection counts={counts} />
+
+      <FeaturedList
+        events={upcoming}
+        title="Featured Upcoming Events"
+        subtitle="Keep checking back to stay informed about the activities in our community and reserve your preferred seats in advance."
+      />
 
       <CategoryGrid />
 
-      <EventRow
-        title="Featured events"
-        subtitle="Hand-picked highlights you won't want to miss"
-        events={featured}
-        viewAllHref="/explore?featured=true"
-      />
-
-      <EventRow
-        title="Happening this week"
-        subtitle="Plan your next 7 days"
-        events={weekend}
-        viewAllHref="/explore"
-      />
+      {spotlight && <FestivalBanner event={spotlight} />}
 
       <EventRow
         title="Trending now"
@@ -76,20 +79,13 @@ export default async function HomePage() {
         viewAllHref="/explore?sort=popular"
       />
 
-      <section className="container-page py-14">
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-brand-600/30 via-ink-soft to-royal-600/30 p-10 text-center">
-          <h2 className="text-2xl font-extrabold sm:text-3xl">
-            Got something to host?
-          </h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-ink-muted">
-            Become a TryLinqr organizer and reach thousands of people looking
-            for their next experience.
-          </p>
-          <Link href="/admin-register" className="btn-primary mt-6">
-            Become an organizer
-          </Link>
-        </div>
-      </section>
+      <PopularOrganizers organizers={organizers} />
+
+      <WhyChooseUs />
+
+      <Testimonials />
+
+      <OrganizerCTA />
     </>
   );
 }
