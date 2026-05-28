@@ -2,47 +2,50 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  ArrowUpRight,
+  Search,
+  MapPin,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
+  ArrowRight,
+  Music,
+  Bike,
+  Laugh,
+  Dumbbell,
+  BookOpen,
+  Star,
 } from 'lucide-react';
+import { CITIES } from '@/lib/constants';
 import { HERO_POSTERS } from '@/lib/heroPosters';
 
 const AUTO_MS = 6500;
 
-const stagger = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
-};
-const lineUp = {
-  hidden: { opacity: 0, y: 28 },
-  visible: {
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (d = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-const pop = {
-  hidden: { opacity: 0, scale: 0.6 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-  },
+    transition: { duration: 0.55, delay: d, ease: [0.22, 1, 0.36, 1] },
+  }),
 };
 
-/**
- * Full-bleed creative-poster hero. The active poster fills the entire
- * hero — including the area behind the (transparent) navbar. Auto
- * rotates through all HERO_POSTERS.
- */
+const QUICK_CATS = [
+  { label: 'Concerts', slug: 'concert', icon: Music },
+  { label: 'Bike Rides', slug: 'bike-ride', icon: Bike },
+  { label: 'Comedy', slug: 'comedy', icon: Laugh },
+  { label: 'Sports', slug: 'sports', icon: Dumbbell },
+  { label: 'Workshops', slug: 'workshop', icon: BookOpen },
+];
+
 export default function FullPosterHero() {
+  const router = useRouter();
   const slides = HERO_POSTERS;
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [q, setQ] = useState('');
+  const [city, setCity] = useState('');
 
   useEffect(() => {
     if (paused || slides.length < 2) return;
@@ -56,19 +59,27 @@ export default function FullPosterHero() {
   const go = (d) => setIndex((i) => (i + d + slides.length) % slides.length);
   const poster = slides[index];
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (q.trim()) params.set('q', q.trim());
+    if (city) params.set('city', city);
+    router.push(`/explore?${params.toString()}`);
+  };
+
   return (
     <section
-      className="relative -mt-[68px] flex min-h-screen flex-col overflow-hidden"
+      className="relative -mt-[68px] flex min-h-[92vh] flex-col overflow-hidden"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* photo — full bleed, swaps with crossfade */}
+      {/* ── Background photo — crossfade on slide change ── */}
       <AnimatePresence initial={false}>
         <motion.img
           key={`bg-${poster.slug}`}
           src={poster.photo}
           alt=""
-          initial={{ opacity: 0, scale: 1.08 }}
+          initial={{ opacity: 0, scale: 1.06 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
@@ -76,303 +87,171 @@ export default function FullPosterHero() {
         />
       </AnimatePresence>
 
-      {/* left-side dark fade — covers ~30% of width then dissolves into the photo.
-          This replaces the old rectangular text panel; copy sits inside the fade. */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-[55%] bg-gradient-to-r from-obsidian via-obsidian/82 via-30% to-transparent" />
-      {/* gentle bottom-to-obsidian so controls have contrast */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-obsidian/90 to-transparent" />
-      {/* accent glow tinted by current poster */}
+      {/* ── Overlays ── */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/75" />
       <div
         className="pointer-events-none absolute inset-0"
         style={{
-          background: `radial-gradient(55% 65% at 18% 50%, ${poster.accent}40 0%, transparent 70%)`,
+          background: `radial-gradient(ellipse 80% 60% at 50% 30%, ${poster.accent}30 0%, transparent 70%)`,
         }}
       />
-      <div className="bg-noise pointer-events-none absolute inset-0 opacity-[0.10]" />
 
-      {/* hero content */}
-      <div className="container-page relative flex flex-1 flex-col gap-12 pb-10 pt-[120px] sm:pt-[140px] lg:gap-10">
-        {/* top: poster headline + badges (animated) */}
+      {/* ── Main content — centered ── */}
+      <div className="container-page relative flex flex-1 flex-col items-center justify-center pb-16 pt-[100px] text-center sm:pt-[120px]">
+
+        {/* Eyebrow — current category label */}
         <AnimatePresence mode="wait">
           <motion.div
-            key={poster.slug}
-            variants={stagger}
-            initial="hidden"
-            animate="visible"
-            exit={{ opacity: 0, y: -10, transition: { duration: 0.3 } }}
-            className="grid items-center gap-10 lg:grid-cols-[1.4fr_0.9fr]"
+            key={`eyebrow-${poster.slug}`}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.4 }}
+            className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/90 backdrop-blur-sm"
           >
-            {/* LEFT — copy sits inside the left-side fade scrim,
-                no card border / rectangle */}
-            <div className="relative max-w-[640px]">
-              <motion.div
-                variants={lineUp}
-                className="relative inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/85 backdrop-blur"
-              >
-                <Sparkles
-                  className="h-3 w-3"
-                  style={{ color: poster.accentSoft || '#fff' }}
-                />
-                {poster.eyebrow}
-              </motion.div>
-
-              {/* HEADLINE — three distinct treatments per line */}
-              <div className="relative mt-6 max-w-2xl">
-                {/* tiny asterisk ornament */}
-                <motion.span
-                  variants={lineUp}
-                  className="absolute -left-2 -top-3 font-display text-lg text-white/60 sm:-left-3 sm:text-2xl"
-                  style={{ transform: 'rotate(-12deg)' }}
-                >
-                  ✦
-                </motion.span>
-
-                {poster.headline.map((line, i) => {
-                  const style = ['outline', 'serif', 'stamp'][i] || 'stamp';
-
-                  if (style === 'outline') {
-                    // Line 0: thin outlined uppercase — stencil style
-                    return (
-                      <motion.h1
-                        key={i}
-                        variants={lineUp}
-                        style={{
-                          color: 'transparent',
-                          WebkitTextStroke: `1.5px ${line.color}`,
-                          transform: 'rotate(-3deg)',
-                          textShadow: '0 6px 18px rgba(0,0,0,0.35)',
-                        }}
-                        className="font-display font-extrabold uppercase leading-[0.95] tracking-tight text-[2.4rem] sm:text-5xl xl:text-[4.6rem]"
-                      >
-                        {line.text}
-                      </motion.h1>
-                    );
-                  }
-
-                  if (style === 'serif') {
-                    // Line 1: HUGE Playfair italic lowercase with swash
-                    return (
-                      <motion.h1
-                        key={i}
-                        variants={lineUp}
-                        style={{
-                          color: line.color,
-                          transform: 'rotate(-1deg) translateX(8px)',
-                          textShadow:
-                            '0 4px 0 rgba(0,0,0,0.18), 0 12px 32px rgba(0,0,0,0.55)',
-                        }}
-                        className="relative -mt-1 font-serif italic font-black leading-[0.9] tracking-tight text-[4.6rem] sm:text-[7rem] xl:text-[9rem]"
-                      >
-                        {line.text.toLowerCase()}
-                        {/* swash underline */}
-                        <svg
-                          aria-hidden
-                          viewBox="0 0 320 18"
-                          className="absolute -bottom-2 left-2 h-3 w-[85%] sm:w-[78%]"
-                        >
-                          <motion.path
-                            d="M2 12 C 80 0, 220 0, 318 8"
-                            stroke={poster.accentSoft || '#fff'}
-                            strokeWidth="4"
-                            strokeLinecap="round"
-                            fill="none"
-                            initial={{ pathLength: 0 }}
-                            animate={{ pathLength: 1 }}
-                            transition={{
-                              delay: 0.7,
-                              duration: 1.1,
-                              ease: [0.22, 1, 0.36, 1],
-                            }}
-                          />
-                        </svg>
-                      </motion.h1>
-                    );
-                  }
-
-                  // Line 2: filled stamp — wide letter-spacing
-                  return (
-                    <motion.div
-                      key={i}
-                      variants={lineUp}
-                      className="mt-2 flex items-center gap-3"
-                      style={{ transform: 'rotate(-1.5deg)' }}
-                    >
-                      <span
-                        className="hidden h-px flex-1 sm:block"
-                        style={{ background: `${line.color}66` }}
-                      />
-                      <motion.h1
-                        style={{
-                          color: line.color,
-                          textShadow:
-                            '0 2px 0 rgba(0,0,0,0.25), 0 8px 22px rgba(0,0,0,0.5)',
-                        }}
-                        className="font-display font-extrabold uppercase leading-none text-[1.6rem] tracking-[0.22em] sm:text-[2.4rem] xl:text-[3rem]"
-                      >
-                        {line.text}
-                      </motion.h1>
-                      <span
-                        className="hidden h-px flex-1 sm:block"
-                        style={{ background: `${line.color}66` }}
-                      />
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              {/* tagline — flanked by dividers, more deliberate */}
-              <motion.div
-                variants={lineUp}
-                className="mt-8 flex max-w-md items-center gap-3"
-              >
-                <span className="h-px flex-1 bg-white/25" />
-                <p className="text-center font-display text-[12px] font-semibold uppercase tracking-[0.28em] text-white/85 sm:text-[13px]">
-                  {poster.tagline}
-                </p>
-                <span className="h-px flex-1 bg-white/25" />
-              </motion.div>
-
-              <motion.div variants={lineUp} className="mt-6 flex flex-wrap gap-3">
-                <Link
-                  href={poster.href}
-                  className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold uppercase tracking-[0.16em] text-obsidian shadow-elevated transition-transform hover:-translate-y-0.5"
-                >
-                  {poster.cta}
-                  <ArrowUpRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="/admin-register"
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold uppercase tracking-[0.16em] text-white backdrop-blur hover:bg-white/20"
-                >
-                  Become Organizer
-                </Link>
-              </motion.div>
-            </div>
-
-            {/* RIGHT — badges + barcode stamp (stacked) */}
-            <motion.div
-              variants={stagger}
-              className="flex flex-col items-end gap-6 lg:items-end"
-            >
-              <div className="flex flex-wrap items-center gap-4">
-                {poster.badges.map((b, i) => (
-                  <motion.div
-                    key={i}
-                    variants={pop}
-                    whileHover={{ y: -4, rotate: i % 2 === 0 ? -3 : 3 }}
-                    style={{
-                      transform: `rotate(${i % 2 === 0 ? -5 : 5}deg)`,
-                      background:
-                        b.tone === 'sand'
-                          ? '#b38f6f'
-                          : b.tone === 'cream'
-                          ? '#fff7e9'
-                          : '#161616',
-                      color:
-                        b.tone === 'sand' || b.tone === 'cream'
-                          ? '#161616'
-                          : '#fff7e9',
-                    }}
-                    className="grid h-[110px] w-[110px] place-items-center rounded-full border-2 border-white/25 text-center shadow-elevated sm:h-[124px] sm:w-[124px]"
-                  >
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-80">
-                        {b.label}
-                      </p>
-                      <p className="font-display text-lg font-extrabold uppercase leading-tight sm:text-xl">
-                        {b.value}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* barcode stamp */}
-              <motion.div
-                variants={pop}
-                className="hidden items-center gap-3 rounded-xl bg-white/10 px-3 py-2 backdrop-blur sm:flex"
-              >
-                <Barcode />
-                <span className="font-display text-[10px] font-semibold uppercase tracking-[0.22em] text-white/80">
-                  {poster.stamp || 'TICKET · 24-TLQ-001'}
-                </span>
-              </motion.div>
-            </motion.div>
+            <Star className="h-3 w-3" style={{ color: poster.accentSoft || '#fff' }} />
+            {poster.eyebrow}
           </motion.div>
         </AnimatePresence>
 
-        {/* bottom: just nav controls (search/city now lives in the header) */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.6 }}
-          className="mt-auto flex items-center justify-center gap-3"
+        {/* Main headline */}
+        <motion.h1
+          variants={fadeUp}
+          custom={0.05}
+          initial="hidden"
+          animate="visible"
+          className="max-w-3xl font-display text-4xl font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_2px_16px_rgba(0,0,0,0.6)] sm:text-5xl xl:text-[3.8rem]"
         >
-            <div className="flex items-center gap-3">
-            <button
-              onClick={() => go(-1)}
-              aria-label="Previous"
-              className="grid h-9 w-9 place-items-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/20"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <div className="flex items-center gap-2">
-              {slides.map((s, i) => (
-                <button
-                  key={s.slug}
-                  onClick={() => setIndex(i)}
-                  aria-label={`Show ${s.slug} poster`}
-                  className="group relative h-1.5 overflow-hidden rounded-full bg-white/20 transition-all"
-                  style={{ width: i === index ? 36 : 10 }}
-                >
-                  {i === index && !paused && (
-                    <motion.span
-                      key={`prog-${i}-${index}`}
-                      initial={{ width: 0 }}
-                      animate={{ width: '100%' }}
-                      transition={{ duration: AUTO_MS / 1000, ease: 'linear' }}
-                      className="absolute inset-y-0 left-0 bg-white"
-                    />
-                  )}
-                  {i === index && paused && (
-                    <span className="absolute inset-0 bg-white" />
-                  )}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => go(1)}
-              aria-label="Next"
-              className="grid h-9 w-9 place-items-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/20"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
+          Find &amp; Book Events{' '}
+          <span style={{ color: poster.accentSoft || '#f97316' }}>
+            Happening Near You
+          </span>
+        </motion.h1>
+
+        <motion.p
+          variants={fadeUp}
+          custom={0.15}
+          initial="hidden"
+          animate="visible"
+          className="mt-4 max-w-xl text-base text-white/75 sm:text-lg"
+        >
+          Concerts, bike rides, comedy nights, workshops &amp; more — discover
+          what&apos;s on and book your seat in seconds.
+        </motion.p>
+
+        {/* ── Search bar ── */}
+        <motion.form
+          variants={fadeUp}
+          custom={0.25}
+          initial="hidden"
+          animate="visible"
+          onSubmit={handleSearch}
+          className="mt-8 flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-[0_8px_40px_rgba(0,0,0,0.35)] sm:flex-row"
+        >
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-brand-700" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search events, artists, venues…"
+              className="w-full bg-transparent py-4 pl-12 pr-4 text-sm font-medium text-obsidian placeholder:text-ink-muted focus:outline-none"
+            />
           </div>
+          <div className="hidden w-px self-stretch bg-ink-line sm:block" />
+          <div className="relative sm:w-44">
+            <MapPin className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-700" />
+            <select
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="w-full appearance-none bg-transparent py-4 pl-11 pr-4 text-sm font-medium text-obsidian focus:outline-none"
+            >
+              <option value="">All Cities</option>
+              {CITIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="submit"
+            className="flex items-center justify-center gap-2 bg-brand-700 px-7 py-4 text-sm font-bold text-white transition-colors hover:bg-brand-800"
+          >
+            Search
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </motion.form>
+
+        {/* ── Quick category pills ── */}
+        <motion.div
+          variants={fadeUp}
+          custom={0.35}
+          initial="hidden"
+          animate="visible"
+          className="mt-6 flex flex-wrap items-center justify-center gap-2"
+        >
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-white/50">
+            Browse:
+          </span>
+          {QUICK_CATS.map(({ label, slug, icon: Icon }) => (
+            <Link
+              key={slug}
+              href={`/categories/${slug}`}
+              className="flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-white/90 backdrop-blur-sm transition-all hover:bg-white/25 hover:border-white/50"
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+            </Link>
+          ))}
+        </motion.div>
+
+        {/* ── Slide navigation ── */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-10 flex items-center gap-4"
+        >
+          <button
+            onClick={() => go(-1)}
+            aria-label="Previous"
+            className="grid h-9 w-9 place-items-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur-sm transition-colors hover:bg-white/25"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+
+          <div className="flex items-center gap-2">
+            {slides.map((s, i) => (
+              <button
+                key={s.slug}
+                onClick={() => setIndex(i)}
+                aria-label={`Show ${s.slug}`}
+                className="relative h-1.5 overflow-hidden rounded-full bg-white/25 transition-all"
+                style={{ width: i === index ? 32 : 8 }}
+              >
+                {i === index && !paused && (
+                  <motion.span
+                    key={`p-${i}-${index}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: '100%' }}
+                    transition={{ duration: AUTO_MS / 1000, ease: 'linear' }}
+                    className="absolute inset-y-0 left-0 bg-white"
+                  />
+                )}
+                {i === index && paused && (
+                  <span className="absolute inset-0 bg-white" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => go(1)}
+            aria-label="Next"
+            className="grid h-9 w-9 place-items-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur-sm transition-colors hover:bg-white/25"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </motion.div>
       </div>
     </section>
-  );
-}
-
-function Barcode() {
-  const bars = Array.from({ length: 22 }, (_, i) => ({
-    w: 1 + ((i * 31) % 4),
-    gap: 1 + ((i * 11) % 3),
-  }));
-  return (
-    <div className="flex items-end gap-[1px]">
-      {bars.map((b, i) => (
-        <span
-          key={i}
-          style={{
-            width: `${b.w}px`,
-            marginRight: `${b.gap}px`,
-            height: '24px',
-            background: '#fff',
-            opacity: 0.85,
-          }}
-        />
-      ))}
-    </div>
   );
 }
