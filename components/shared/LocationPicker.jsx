@@ -286,13 +286,6 @@ export default function LocationPicker({
           </motion.div>
         )}
       </AnimatePresence>
-
-      {!googleEnabled && GOOGLE_MAPS_KEY === '' && (
-        <p className="mt-1 text-[11px] text-ink-muted">
-          Tip: add <code>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> in
-          <code>.env.local</code> for richer Google Places results.
-        </p>
-      )}
     </div>
   );
 }
