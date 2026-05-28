@@ -49,6 +49,7 @@ module.exports = {
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
         display: ['var(--font-display)', 'Plus Jakarta Sans', 'ui-sans-serif'],
+        serif: ['var(--font-serif)', 'Playfair Display', 'ui-serif', 'serif'],
       },
       boxShadow: {
         glow: '0 22px 50px -22px rgba(113,0,20,0.45)',

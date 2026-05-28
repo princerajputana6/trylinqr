@@ -23,6 +23,7 @@ import Gallery from '@/components/events/Gallery';
 import ViewPing from '@/components/events/ViewPing';
 import EventCard from '@/components/events/EventCard';
 import RideDetails from '@/components/events/RideDetails';
+import MiniMap from '@/components/shared/MiniMap';
 
 export const dynamic = 'force-dynamic';
 
@@ -161,16 +162,18 @@ export default async function EventPage({ params }) {
                     .join(', ')}
                 </p>
                 {event.venue.lat && event.venue.lng && (
-                  <iframe
-                    title="map"
-                    className="mt-3 h-56 w-full rounded-xl border border-white/10"
-                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${
-                      event.venue.lng - 0.01
-                    }%2C${event.venue.lat - 0.01}%2C${
-                      event.venue.lng + 0.01
-                    }%2C${event.venue.lat + 0.01}&marker=${event.venue.lat}%2C${
-                      event.venue.lng
-                    }`}
+                  <MiniMap
+                    className="mt-4"
+                    lat={event.venue.lat}
+                    lng={event.venue.lng}
+                    name={event.venue.name}
+                    address={[
+                      event.venue.address,
+                      event.venue.city,
+                      event.venue.state,
+                    ]
+                      .filter(Boolean)
+                      .join(', ')}
                   />
                 )}
               </div>

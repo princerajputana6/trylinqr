@@ -63,6 +63,8 @@ const SupportTicketSchema = new mongoose.Schema(
       ref: 'User',
     },
     forwardedReason: { type: String },
+    assignedAt: { type: Date, default: Date.now },
+    autoEscalated: { type: Boolean, default: false },
     status: {
       type: String,
       enum: ['open', 'in_progress', 'resolved', 'closed'],

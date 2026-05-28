@@ -8,6 +8,7 @@ import {
   BarChart3,
   UserCircle,
   LifeBuoy,
+  Landmark,
 } from 'lucide-react';
 import Protected from '@/components/auth/Protected';
 import DashboardShell from '@/components/layout/DashboardShell';
@@ -18,6 +19,7 @@ const NAV = [
   { href: '/dashboard/events/create', label: 'Create Event', icon: CalendarPlus },
   { href: '/dashboard/bookings', label: 'Bookings', icon: Ticket },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/dashboard/payouts', label: 'Payouts', icon: Landmark },
   { href: '/dashboard/support', label: 'Support', icon: LifeBuoy },
   { href: '/profile', label: 'Profile', icon: UserCircle },
 ];

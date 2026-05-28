@@ -1,6 +1,11 @@
 import { ok, fail } from '@/lib/api';
 import { requireUser } from '@/lib/auth';
-import { signUpload, cloudinaryConfigured } from '@/lib/cloudinary';
+import {
+  signUpload,
+  cloudinaryConfigured,
+  CLOUD_NAME,
+  API_KEY,
+} from '@/lib/cloudinary';
 
 // Returns a signature so the browser can upload directly to Cloudinary.
 export async function POST(req) {
@@ -20,8 +25,8 @@ export async function POST(req) {
       signature,
       timestamp,
       folder,
-      apiKey: process.env.CLOUDINARY_API_KEY,
-      cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+      apiKey: API_KEY,
+      cloudName: CLOUD_NAME,
     });
   } catch (e) {
     console.error(e);

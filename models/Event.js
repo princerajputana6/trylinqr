@@ -72,6 +72,7 @@ const EventSchema = new mongoose.Schema(
       address: String,
       city: { type: String, index: true },
       state: String,
+      country: String,
       pincode: String,
       lat: Number,
       lng: Number,

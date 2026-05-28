@@ -14,9 +14,11 @@ import {
   Mountain,
   Users,
   ClipboardList,
+  Sparkles,
 } from 'lucide-react';
 import ImageUploader from '@/components/admin/ImageUploader';
 import TicketTierBuilder from '@/components/admin/TicketTierBuilder';
+import LocationPicker from '@/components/shared/LocationPicker';
 import {
   CATEGORIES,
   CITIES,
@@ -24,6 +26,7 @@ import {
   RIDE_GEARS,
   RIDE_DIFFICULTY,
 } from '@/lib/constants';
+import { SUB_CATEGORIES, suggestTags } from '@/lib/eventTaxonomy';
 import { useToast } from '@/components/shared/Toast';
 
 function buildSteps(category) {
@@ -243,10 +246,16 @@ export default function EventForm({ initial, eventId }) {
                     <label className="label">Sub-category</label>
                     <input
                       className="input"
-                      placeholder="Optional"
+                      list={`sub-${form.category}`}
+                      placeholder="Pick one or type your own"
                       value={form.subCategory}
                       onChange={(e) => set('subCategory', e.target.value)}
                     />
+                    <datalist id={`sub-${form.category}`}>
+                      {(SUB_CATEGORIES[form.category] || []).map((s) => (
+                        <option key={s} value={s} />
+                      ))}
+                    </datalist>
                   </div>
                 </div>
                 <div>
@@ -259,9 +268,30 @@ export default function EventForm({ initial, eventId }) {
                   />
                 </div>
                 <div>
-                  <label className="label">Tags (comma separated)</label>
+                  <div className="mb-1.5 flex items-center justify-between gap-2">
+                    <label className="label !mb-0">Tags</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const auto = suggestTags({
+                          title: form.title,
+                          description: form.description,
+                          category: form.category,
+                          city: form.venue?.city,
+                        });
+                        const merged = Array.from(
+                          new Set([...(form.tags || []), ...auto])
+                        ).slice(0, 10);
+                        set('tags', merged);
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-md bg-brand-700/[0.08] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-700 hover:bg-brand-700/[0.14]"
+                    >
+                      <Sparkles className="h-3 w-3" /> Suggest tags
+                    </button>
+                  </div>
                   <input
                     className="input"
+                    placeholder="comma-separated · use Suggest tags to auto-fill"
                     value={form.tags.join(', ')}
                     onChange={(e) =>
                       set(
@@ -273,6 +303,18 @@ export default function EventForm({ initial, eventId }) {
                       )
                     }
                   />
+                  {form.tags.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {form.tags.map((t) => (
+                        <span
+                          key={t}
+                          className="chip border border-ink-line bg-pearl text-obsidian/70"
+                        >
+                          #{t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </>
             )}
@@ -318,22 +360,41 @@ export default function EventForm({ initial, eventId }) {
                     />
                   </div>
                 </div>
+                <LocationPicker
+                  label="Pick venue location"
+                  placeholder="Search a venue, landmark or address…"
+                  value={form.venue.address || ''}
+                  onSelect={(loc) =>
+                    setForm((f) => ({
+                      ...f,
+                      venue: {
+                        ...f.venue,
+                        address: loc.displayName,
+                        city: loc.city || f.venue.city,
+                        state: loc.state || f.venue.state,
+                        country: loc.country || f.venue.country,
+                        pincode: loc.pincode || f.venue.pincode,
+                        lat: loc.lat,
+                        lng: loc.lng,
+                      },
+                    }))
+                  }
+                />
+                <p className="-mt-2 text-xs text-ink-muted">
+                  Use the search above to auto-fill city, state, country and
+                  coordinates. You can still edit any field below.
+                </p>
+
                 <div>
                   <label className="label">Venue name</label>
                   <input
                     className="input"
+                    placeholder="e.g. Super Chai, Bandstand, Lakshya Auditorium"
                     value={form.venue.name}
                     onChange={(e) => setVenue('name', e.target.value)}
                   />
                 </div>
-                <div>
-                  <label className="label">Address</label>
-                  <input
-                    className="input"
-                    value={form.venue.address}
-                    onChange={(e) => setVenue('address', e.target.value)}
-                  />
-                </div>
+
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div>
                     <label className="label">City</label>
@@ -358,34 +419,30 @@ export default function EventForm({ initial, eventId }) {
                     />
                   </div>
                   <div>
-                    <label className="label">Pincode</label>
+                    <label className="label">Country</label>
                     <input
                       className="input"
-                      value={form.venue.pincode}
-                      onChange={(e) => setVenue('pincode', e.target.value)}
+                      value={form.venue.country || ''}
+                      onChange={(e) => setVenue('country', e.target.value)}
                     />
                   </div>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="label">Latitude (optional)</label>
-                    <input
-                      type="number"
-                      className="input"
-                      value={form.venue.lat}
-                      onChange={(e) => setVenue('lat', e.target.value)}
-                    />
+
+                {(form.venue.lat || form.venue.pincode) && (
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+                    {form.venue.pincode && (
+                      <span className="chip border border-ink-line bg-pearl text-obsidian/70">
+                        PIN · {form.venue.pincode}
+                      </span>
+                    )}
+                    {form.venue.lat && (
+                      <span className="chip border border-ink-line bg-pearl text-obsidian/70">
+                        {Number(form.venue.lat).toFixed(4)},{' '}
+                        {Number(form.venue.lng).toFixed(4)}
+                      </span>
+                    )}
                   </div>
-                  <div>
-                    <label className="label">Longitude (optional)</label>
-                    <input
-                      type="number"
-                      className="input"
-                      value={form.venue.lng}
-                      onChange={(e) => setVenue('lng', e.target.value)}
-                    />
-                  </div>
-                </div>
+                )}
               </>
             )}
 

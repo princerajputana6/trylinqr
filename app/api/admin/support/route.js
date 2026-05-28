@@ -11,10 +11,17 @@ export async function GET(req) {
     await connectDB();
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
-    const query = { assignedRole: 'admin', assignedTo: auth.user.id };
-    if (status) query.status = status;
 
-    const tickets = await SupportTicket.find(query)
+    // Show tickets either assigned to this organizer OR raised by them
+    const base = {
+      $or: [
+        { assignedRole: 'admin', assignedTo: auth.user.id },
+        { customer: auth.user.id },
+      ],
+    };
+    const filter = status ? { ...base, status } : base;
+
+    const tickets = await SupportTicket.find(filter)
       .populate('customer', 'name email avatar')
       .populate('relatedEvent', 'title slug')
       .populate('relatedBooking', 'bookingCode')
@@ -22,16 +29,13 @@ export async function GET(req) {
       .lean();
 
     const counts = {
-      open: await SupportTicket.countDocuments({
-        ...query,
-        status: 'open',
-      }),
+      open: await SupportTicket.countDocuments({ ...base, status: 'open' }),
       in_progress: await SupportTicket.countDocuments({
-        ...query,
+        ...base,
         status: 'in_progress',
       }),
       resolved: await SupportTicket.countDocuments({
-        ...query,
+        ...base,
         status: 'resolved',
       }),
     };

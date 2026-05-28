@@ -1,4 +1,4 @@
-import HeroCarousel from '@/components/home/HeroCarousel';
+import FullPosterHero from '@/components/home/FullPosterHero';
 import FeaturedList from '@/components/home/FeaturedList';
 import CategoryGrid from '@/components/home/CategoryGrid';
 import EventRow from '@/components/home/EventRow';
@@ -8,6 +8,7 @@ import PopularOrganizers from '@/components/home/PopularOrganizers';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
 import Testimonials from '@/components/home/Testimonials';
 import OrganizerCTA from '@/components/home/OrganizerCTA';
+import NearbyBar from '@/components/home/NearbyBar';
 import {
   getFeaturedEvents,
   getWeekendEvents,
@@ -58,7 +59,9 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroCarousel events={heroSlides.length ? heroSlides : recent} />
+      <FullPosterHero />
+
+      <NearbyBar />
 
       <StatsSection counts={counts} />
 

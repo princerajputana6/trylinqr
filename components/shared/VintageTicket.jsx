@@ -2,20 +2,19 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, MapPin, ArrowRight, Ticket } from 'lucide-react';
+import { Calendar, Clock, MapPin, ArrowRight } from 'lucide-react';
 import { categoryBySlug } from '@/lib/constants';
 import { formatDate, formatCurrency } from '@/lib/utils';
 
 /**
  * Reusable "vintage ticket" event card.
  *  - Cream linen surface, crimson + sand accents
- *  - Perforated stub with dashed divider and circular cutout dots
- *  - Image on the left, content in the middle, date stub on the right
+ *  - Image left, content middle, date stub on the right
+ *  - Equal-height structure: title clamped to 2 lines, description to 2
+ *    lines, content area uses flex-1, parent uses h-full — so siblings in
+ *    a grid/scroller stay perfectly aligned.
  *
  * size = 'hero' | 'list' | 'compact'
- *   hero: large card used inside the homepage carousel
- *   list: medium card used in 2-up scrollers and event grids
- *   compact: condensed for tight spaces
  */
 export default function VintageTicket({
   event,
@@ -39,25 +38,27 @@ export default function VintageTicket({
   const month = formatDate(event.startDate, { month: 'short' });
   const linkHref = href || `/events/${event.slug}`;
 
-  // sizing
+  // sizing — both image & content adopt a shared minimum height for the
+  // size variant, and `h-full` on the article lets parent grids force
+  // equal heights across siblings.
   const sizes = {
     hero: {
       grid: 'grid-cols-[1.05fr_1.4fr_0.42fr]',
-      imageH: 'min-h-[340px]',
+      minH: 'min-h-[420px] sm:min-h-[460px]',
       title: 'text-2xl sm:text-3xl',
       ticketCornerLabel: 'EVENT TICKET · ADMIT ONE',
       stubLabel: 'No. ' + slugId(event._id),
     },
     list: {
-      grid: 'grid-cols-[140px_1fr_72px] sm:grid-cols-[190px_1fr_88px]',
-      imageH: 'min-h-[220px]',
+      grid: 'grid-cols-[150px_1fr_72px] sm:grid-cols-[200px_1fr_84px]',
+      minH: 'min-h-[360px] sm:min-h-[380px]',
       title: 'text-lg sm:text-xl',
       ticketCornerLabel: 'EVENT TICKET',
       stubLabel: 'No. ' + slugId(event._id),
     },
     compact: {
       grid: 'grid-cols-[110px_1fr_60px]',
-      imageH: 'min-h-[160px]',
+      minH: 'min-h-[220px]',
       title: 'text-base',
       ticketCornerLabel: 'TICKET',
       stubLabel: '',
@@ -65,30 +66,25 @@ export default function VintageTicket({
   }[size] || {};
 
   return (
-    <Link href={linkHref} className={`group block ${className}`}>
+    <Link href={linkHref} className={`group block h-full ${className}`}>
       <motion.article
         whileHover={size === 'compact' ? {} : { y: -4 }}
         transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-        className="relative overflow-hidden rounded-[26px] border border-brand-900/15 bg-sand-50 shadow-elevated"
+        className={`relative flex h-full ${sizes.minH} overflow-hidden rounded-[26px] border border-brand-900/15 bg-sand-50 shadow-elevated`}
       >
         {/* paper texture */}
-        <div className="bg-noise pointer-events-none absolute inset-0 opacity-[0.25]" />
-
+        <div className="bg-noise pointer-events-none absolute inset-0 opacity-[0.22]" />
         {/* outer ornamental dashed border */}
         <div className="pointer-events-none absolute inset-2 rounded-[20px] border border-dashed border-brand-700/25" />
-
-        {/* corner labels */}
-        <div className="pointer-events-none absolute left-5 top-3 z-10 text-[10px] font-semibold uppercase tracking-[0.35em] text-brand-700/70">
+        {/* corner label */}
+        <div className="pointer-events-none absolute left-5 top-3 z-10 text-[10px] font-semibold uppercase tracking-[0.32em] text-brand-700/70">
           {sizes.ticketCornerLabel}
         </div>
 
-        {/* main grid */}
-        <div
-          className={`relative grid ${sizes.grid} items-stretch`}
-          style={{ minHeight: size === 'hero' ? 340 : undefined }}
-        >
-          {/* IMAGE */}
-          <div className={`relative overflow-hidden ${sizes.imageH}`}>
+        {/* main grid — items-stretch + h-full so all 3 columns are equal */}
+        <div className={`relative grid h-full w-full ${sizes.grid} items-stretch`}>
+          {/* IMAGE — fills the column */}
+          <div className="relative h-full overflow-hidden">
             <motion.img
               src={banner}
               alt={event.title}
@@ -96,7 +92,6 @@ export default function VintageTicket({
             />
             <div className="absolute inset-0 bg-gradient-to-br from-brand-900/15 via-transparent to-sand-700/15 mix-blend-multiply" />
             <div className="absolute inset-0 bg-gradient-to-t from-sand-50/40 via-transparent to-transparent" />
-            {/* dashed seam (right edge) */}
             <span className="pointer-events-none absolute inset-y-4 right-0 border-l border-dashed border-brand-700/30" />
 
             <span
@@ -108,23 +103,28 @@ export default function VintageTicket({
             </span>
           </div>
 
-          {/* CONTENT */}
-          <div className="relative px-6 py-7 sm:px-8">
+          {/* CONTENT — flex column, bottom-anchored actions */}
+          <div className="relative flex h-full flex-col px-5 pb-5 pt-9 sm:px-7">
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-brand-700">
               {cat.label} · {event.venue?.city || 'Online'}
             </p>
+
+            {/* title — clamped to 2 lines for equal height */}
             <h3
-              className={`mt-2 font-display font-extrabold leading-tight tracking-tight text-brand-900 ${sizes.title}`}
+              className={`mt-2 line-clamp-2 min-h-[2.1em] font-display font-extrabold leading-tight tracking-tight text-brand-900 ${sizes.title}`}
             >
               {event.title}
             </h3>
-            {event.description && size !== 'compact' && (
-              <p className="mt-2 line-clamp-2 text-sm text-brand-900/70">
-                {event.description}
+
+            {/* description — clamped to 2 lines, reserves space */}
+            {size !== 'compact' && (
+              <p className="mt-2 line-clamp-2 min-h-[2.6em] text-sm text-brand-900/70">
+                {event.description || ' '}
               </p>
             )}
 
-            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs font-medium text-brand-900/80 sm:text-sm">
+            {/* meta */}
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-brand-900/80">
               <span className="flex items-center gap-1.5">
                 <Calendar className="h-3.5 w-3.5 text-brand-700" />
                 {formatDate(event.startDate, { weekday: 'short' })}
@@ -141,36 +141,34 @@ export default function VintageTicket({
               </span>
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-brand-900/60">
-                Price
-              </span>
-              <span className="font-display text-xl font-extrabold text-brand-700">
-                {minPrice === 0 ? 'FREE' : formatCurrency(minPrice)}
-              </span>
-            </div>
+            {/* spacer pushes price + actions to bottom */}
+            <div className="flex-1" />
 
-            {showActions && (
-              <div className="mt-5 flex flex-wrap items-center gap-3">
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.22em] text-brand-900/55">
+                  Price
+                </p>
+                <p className="font-display text-xl font-extrabold leading-none text-brand-700">
+                  {minPrice === 0 ? 'FREE' : formatCurrency(minPrice)}
+                </p>
+              </div>
+              {showActions && (
                 <span className="inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-sand-50 shadow-glow-soft transition-transform group-hover:-translate-y-0.5">
                   Get Tickets
                   <ArrowRight className="h-3.5 w-3.5" />
                 </span>
-                <span className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-900/70 underline-offset-4 group-hover:underline">
-                  View Details
-                </span>
-              </div>
+              )}
+            </div>
+            {showActions && (
+              <p className="mt-2 text-[10px] uppercase tracking-[0.22em] text-brand-900/45 group-hover:text-brand-900/70">
+                View details →
+              </p>
             )}
-
-            {/* serial line — bottom watermark */}
-            <p className="pointer-events-none mt-6 hidden text-[10px] uppercase tracking-[0.32em] text-brand-900/30 sm:block">
-              ✦ TryLinqr Original Ticket · Non Transferable ✦
-            </p>
           </div>
 
           {/* STUB */}
-          <div className="relative flex flex-col items-center justify-center gap-1.5 bg-brand-700 px-2 py-6 text-sand-50">
-            {/* dashed seam (left edge of stub) */}
+          <div className="relative flex h-full flex-col items-center justify-center gap-1.5 bg-brand-700 px-2 text-sand-50">
             <span className="pointer-events-none absolute inset-y-4 left-0 border-l border-dashed border-sand-100/40" />
             <div className="absolute inset-y-3 right-2 w-px bg-sand-100/15" />
             <span className="text-[10px] uppercase tracking-[0.28em] text-sand-200">
@@ -207,7 +205,5 @@ export default function VintageTicket({
 }
 
 function slugId(id) {
-  return String(id || '')
-    .slice(-6)
-    .toUpperCase();
+  return String(id || '').slice(-6).toUpperCase();
 }

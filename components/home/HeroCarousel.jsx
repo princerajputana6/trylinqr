@@ -1,171 +1,192 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Pause,
-  Play,
-} from 'lucide-react';
-import VintageTicket from '@/components/shared/VintageTicket';
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { Search, MapPin, ArrowRight, Sparkles } from 'lucide-react';
+import { CITIES, CATEGORIES } from '@/lib/constants';
+import HeroImageCarousel from '@/components/home/HeroImageCarousel';
 
-const AUTO_MS = 6000;
+const quickCats = [
+  'concert',
+  'bike-ride',
+  'comedy',
+  'workshop',
+  'sports',
+  'festival',
+  'food',
+];
 
-export default function HeroCarousel({ events = [] }) {
-  const slides = events.slice(0, 6);
-  const [index, setIndex] = useState(0);
-  const [dir, setDir] = useState(1);
-  const [paused, setPaused] = useState(false);
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
+};
 
-  const go = useCallback(
-    (d) => {
-      setDir(d);
-      setIndex((i) => (i + d + slides.length) % slides.length);
-    },
-    [slides.length]
-  );
+export default function HeroCarousel() {
+  const router = useRouter();
+  const [q, setQ] = useState('');
+  const [city, setCity] = useState('');
 
-  useEffect(() => {
-    if (paused || slides.length < 2) return;
-    const t = setInterval(() => {
-      setDir(1);
-      setIndex((i) => (i + 1) % slides.length);
-    }, AUTO_MS);
-    return () => clearInterval(t);
-  }, [paused, slides.length]);
-
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'ArrowLeft') go(-1);
-      if (e.key === 'ArrowRight') go(1);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [go]);
-
-  if (!slides.length) {
-    return (
-      <section className="-mt-[68px] grid h-[60vh] place-items-center bg-obsidian text-white/60">
-        No featured events yet.
-      </section>
-    );
-  }
-
-  const event = slides[index];
-  const banner =
-    event.bannerImage ||
-    'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1800&q=75';
+  const search = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (q.trim()) params.set('q', q.trim());
+    if (city) params.set('city', city);
+    router.push(`/explore?${params.toString()}`);
+  };
 
   return (
-    <section
-      className="relative -mt-[68px] flex min-h-[640px] items-center overflow-hidden bg-obsidian py-12 pt-[100px] sm:py-16 sm:pt-[120px]"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
-      {/* background image stack with soft fade */}
-      <AnimatePresence initial={false}>
-        <motion.div
-          key={`bg-${event._id}`}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-0"
-        >
-          <img
-            src={banner}
-            alt=""
-            className="h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-obsidian/80" />
-          <div className="absolute inset-0 bg-gradient-to-b from-obsidian/60 via-obsidian/55 to-obsidian" />
-          <div className="absolute inset-0 bg-[radial-gradient(50%_60%_at_50%_40%,rgba(113,0,20,0.25)_0%,transparent_70%)]" />
-        </motion.div>
-      </AnimatePresence>
+    <section className="relative -mt-[68px] overflow-hidden bg-pearl pb-20 pt-[120px] sm:pb-24 sm:pt-[140px]">
+      {/* ambient layers */}
+      <div className="bg-grid absolute inset-0 opacity-40" />
+      <div className="absolute -left-44 top-1/4 h-[520px] w-[520px] rounded-full bg-brand-700/10 blur-[140px]" />
+      <div className="absolute -right-32 bottom-0 h-[460px] w-[460px] rounded-full bg-sand-400/25 blur-[140px]" />
 
-      {/* nav arrows */}
-      <button
-        onClick={() => go(-1)}
-        aria-label="Previous event"
-        className="group absolute left-4 top-1/2 z-30 hidden -translate-y-1/2 grid h-12 w-12 place-items-center rounded-full border border-sand-100/20 bg-sand-50/10 text-sand-50 backdrop-blur-md transition-all hover:bg-sand-50/25 sm:grid"
-      >
-        <ChevronLeft className="h-5 w-5 transition-transform group-hover:-translate-x-0.5" />
-      </button>
-      <button
-        onClick={() => go(1)}
-        aria-label="Next event"
-        className="group absolute right-4 top-1/2 z-30 hidden -translate-y-1/2 grid h-12 w-12 place-items-center rounded-full border border-sand-100/20 bg-sand-50/10 text-sand-50 backdrop-blur-md transition-all hover:bg-sand-50/25 sm:grid"
-      >
-        <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
-      </button>
-
-      <div className="container-page relative w-full">
-        {/* eyebrow above ticket */}
-        <div className="mx-auto mb-5 flex max-w-4xl items-center justify-center gap-3 text-center">
-          <span className="h-px w-12 bg-sand-100/30" />
-          <span className="text-[11px] font-semibold uppercase tracking-[0.34em] text-sand-200/80">
-            Now Showing on TryLinqr
-          </span>
-          <span className="h-px w-12 bg-sand-100/30" />
-        </div>
-
-        <div className="mx-auto max-w-4xl">
-          <AnimatePresence mode="wait" custom={dir}>
-            <motion.div
-              key={event._id}
-              custom={dir}
-              initial={{ opacity: 0, y: 24, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -16, scale: 0.98 }}
-              transition={{
-                duration: 0.55,
-                ease: [0.22, 1, 0.36, 1],
-                delay: 0.12,
-              }}
-            >
-              <VintageTicket event={event} size="hero" />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* controls — progress + pause */}
-        <div className="mt-7 flex flex-col items-center gap-3">
-          <div className="flex items-center gap-2">
-            {slides.map((s, i) => (
-              <button
-                key={s._id}
-                onClick={() => {
-                  setDir(i > index ? 1 : -1);
-                  setIndex(i);
-                }}
-                aria-label={`Slide ${i + 1}`}
-                className="group relative h-1.5 overflow-hidden rounded-full bg-sand-100/25 transition-all"
-                style={{ width: i === index ? 56 : 18 }}
-              >
-                {i === index && !paused && (
-                  <motion.div
-                    key={`progress-${i}-${index}`}
-                    initial={{ width: 0 }}
-                    animate={{ width: '100%' }}
-                    transition={{ duration: AUTO_MS / 1000, ease: 'linear' }}
-                    className="absolute inset-y-0 left-0 bg-sand-300"
-                  />
-                )}
-                {i === index && paused && (
-                  <span className="absolute inset-0 bg-sand-300" />
-                )}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => setPaused((p) => !p)}
-            className="flex items-center gap-1.5 rounded-full border border-sand-100/20 bg-sand-50/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-sand-100/85 backdrop-blur transition-colors hover:bg-sand-50/20"
+      <div className="container-page relative grid items-center gap-12 lg:grid-cols-[1.08fr_0.92fr]">
+        {/* LEFT — animated text */}
+        <motion.div variants={stagger} initial="hidden" animate="visible">
+          <motion.div
+            variants={fadeUp}
+            className="flex w-fit items-center gap-2 rounded-full border border-ink-line bg-white px-4 py-1.5 text-xs font-medium text-obsidian shadow-card"
           >
-            {paused ? <Play className="h-3 w-3" /> : <Pause className="h-3 w-3" />}
-            {paused ? 'Play' : 'Pause'}
-          </button>
-        </div>
+            <Sparkles className="h-3.5 w-3.5 text-brand-700" />
+            India&apos;s premium event ecosystem
+          </motion.div>
+
+          <motion.h1
+            variants={fadeUp}
+            className="mt-5 font-display text-[2.7rem] font-extrabold leading-[1.04] tracking-tight text-obsidian sm:text-5xl xl:text-[4rem]"
+          >
+            Discover events that{' '}
+            <span className="relative whitespace-nowrap">
+              <span className="text-brand-700">match your vibe</span>
+              <svg
+                className="absolute -bottom-2 left-0 w-full"
+                viewBox="0 0 300 12"
+                fill="none"
+              >
+                <motion.path
+                  d="M2 9 C90 -2 220 -2 298 6"
+                  stroke="#710014"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{
+                    delay: 0.55,
+                    duration: 1.1,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                />
+              </svg>
+            </span>
+          </motion.h1>
+
+          <motion.p
+            variants={fadeUp}
+            className="mt-6 max-w-lg text-base leading-relaxed text-obsidian/70 md:text-lg"
+          >
+            From bike rides and jagrans to concerts, workshops, sports and
+            festivals — one cinematic place to find what&apos;s on, book in
+            seconds, and never miss a moment.
+          </motion.p>
+
+          <motion.form
+            variants={fadeUp}
+            onSubmit={search}
+            className="mt-7 flex max-w-xl flex-col gap-2 rounded-2xl border border-ink-line bg-white p-2 shadow-card sm:flex-row"
+          >
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search events, organizers, keywords…"
+                className="w-full rounded-xl bg-transparent py-3 pl-11 pr-3 text-sm text-obsidian placeholder:text-ink-muted focus:outline-none"
+              />
+            </div>
+            <div className="hidden w-px self-stretch bg-ink-line sm:block" />
+            <div className="relative sm:w-40">
+              <MapPin className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+              <select
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="w-full appearance-none rounded-xl bg-transparent py-3 pl-11 pr-3 text-sm text-obsidian focus:outline-none"
+              >
+                <option value="">All cities</option>
+                {CITIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <motion.button
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              type="submit"
+              className="flex items-center justify-center gap-2 rounded-xl bg-brand-700 px-6 py-3 text-sm font-semibold text-white shadow-glow transition-colors hover:bg-brand-800"
+            >
+              Search
+              <ArrowRight className="h-4 w-4" />
+            </motion.button>
+          </motion.form>
+
+          <motion.div
+            variants={fadeUp}
+            className="mt-6 flex flex-wrap items-center gap-3"
+          >
+            <Link href="/explore" className="btn-primary">
+              Explore Events
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link href="/admin-register" className="btn-outline">
+              Become Organizer
+            </Link>
+          </motion.div>
+
+          <motion.div
+            variants={fadeUp}
+            className="mt-8 flex flex-wrap gap-2"
+          >
+            <span className="self-center text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">
+              Trending:
+            </span>
+            {quickCats.map((slug) => {
+              const c = CATEGORIES.find((x) => x.slug === slug);
+              if (!c) return null;
+              const Icon = c.icon;
+              return (
+                <Link
+                  key={c.slug}
+                  href={`/categories/${c.slug}`}
+                  className="group flex items-center gap-1.5 rounded-full border border-ink-line bg-white px-3.5 py-1.5 text-xs font-medium text-obsidian/80 shadow-card transition-all hover:-translate-y-0.5 hover:border-brand-700 hover:text-brand-700"
+                >
+                  <Icon className="h-3.5 w-3.5" style={{ color: c.color }} />
+                  {c.label}
+                </Link>
+              );
+            })}
+          </motion.div>
+        </motion.div>
+
+        {/* RIGHT — animated image carousel */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.94, y: 24 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <HeroImageCarousel />
+        </motion.div>
       </div>
     </section>
   );

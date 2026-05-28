@@ -23,14 +23,32 @@ export async function POST(req) {
       return fail('Subject and message are required');
     }
 
-    // optional: link to a booking the customer owns
-    let relatedBooking, relatedEvent;
+    const isOrganizer = auth.user.role === 'admin';
+    const isSuper = auth.user.role === 'superadmin';
+
+    // Optional: link to a booking the customer owns
+    let relatedBooking, relatedEvent, eventOrganizerId;
     if (relatedBookingId) {
       const b = await Booking.findById(relatedBookingId);
       if (b && String(b.customer) === auth.user.id) {
         relatedBooking = b._id;
         relatedEvent = b.event;
+        const ev = await Event.findById(b.event).select('organizer');
+        if (ev) eventOrganizerId = ev.organizer;
       }
+    }
+
+    // Routing:
+    //  - Organizer raising → straight to superadmin queue
+    //  - Customer with linked booking → route to that event's organizer
+    //  - Customer with no booking link → superadmin
+    let assignedRole = 'superadmin';
+    let assignedTo;
+    if (isOrganizer || isSuper) {
+      assignedRole = 'superadmin';
+    } else if (eventOrganizerId) {
+      assignedRole = 'admin';
+      assignedTo = eventOrganizerId;
     }
 
     const ticket = await SupportTicket.create({
@@ -41,12 +59,14 @@ export async function POST(req) {
       customer: auth.user.id,
       relatedBooking,
       relatedEvent,
-      assignedRole: 'superadmin',
+      assignedRole,
+      assignedTo,
+      assignedAt: new Date(),
       status: 'open',
       messages: [
         {
           author: auth.user.id,
-          role: 'customer',
+          role: isOrganizer ? 'admin' : isSuper ? 'superadmin' : 'customer',
           body: message,
         },
       ],
@@ -54,7 +74,7 @@ export async function POST(req) {
       customerUnread: 0,
     });
 
-    // notify customer (confirmation)
+    // Confirmation to the raiser
     if (auth.user.email) {
       await sendMail({
         to: auth.user.email,
@@ -64,26 +84,42 @@ export async function POST(req) {
     await notify(
       auth.user.id,
       'general',
-      `Ticket ${ticket.ticketCode} received. We'll respond shortly.`,
+      `Ticket ${ticket.ticketCode} received.`,
       `/support/${ticket._id}`
     );
 
-    // notify all superadmins
-    const superadmins = await User.find({ role: 'superadmin' })
-      .select('_id email name')
-      .lean();
-    for (const sa of superadmins) {
-      await notify(
-        sa._id,
-        'general',
-        `New ticket ${ticket.ticketCode}: ${ticket.subject}`,
-        `/superadmin/support/${ticket._id}`
-      );
-      if (sa.email) {
+    // Notify the handler(s)
+    if (assignedRole === 'admin' && assignedTo) {
+      const handler = await User.findById(assignedTo).select('_id email name orgName');
+      if (handler?.email) {
         await sendMail({
-          to: sa.email,
+          to: handler.email,
           ...emails.supportNewForHandler(ticket, auth.user.name),
         });
+      }
+      await notify(
+        handler._id,
+        'general',
+        `New ticket ${ticket.ticketCode}: ${ticket.subject}`,
+        `/dashboard/support/${ticket._id}`
+      );
+    } else {
+      const supers = await User.find({ role: 'superadmin' })
+        .select('_id email')
+        .lean();
+      for (const sa of supers) {
+        await notify(
+          sa._id,
+          'general',
+          `New ${isOrganizer ? 'organizer' : 'customer'} ticket ${ticket.ticketCode}: ${ticket.subject}`,
+          `/superadmin/support/${ticket._id}`
+        );
+        if (sa.email) {
+          await sendMail({
+            to: sa.email,
+            ...emails.supportNewForHandler(ticket, auth.user.name),
+          });
+        }
       }
     }
 

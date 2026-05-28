@@ -22,6 +22,8 @@ import {
   Truck,
 } from 'lucide-react';
 import { CATEGORIES } from '@/lib/constants';
+import HeaderLocationPicker from '@/components/layout/HeaderLocationPicker';
+import HeaderSearchBar from '@/components/layout/HeaderSearchBar';
 
 export default function Navbar() {
   const { data: session } = useSession();
@@ -73,18 +75,12 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-        transparent
-          ? 'bg-transparent'
-          : 'border-b border-ink-line bg-white/95 shadow-soft backdrop-blur-md'
-      }`}
+      className="fixed inset-x-0 top-0 z-50 bg-gradient-to-b from-white/95 via-white/80 to-white/10 backdrop-blur-sm transition-all duration-300"
     >
       <nav className="container-page flex h-[68px] items-center gap-4">
         <Link
           href="/"
-          className={`flex shrink-0 items-center transition-all ${
-            transparent ? 'rounded-xl bg-white px-2.5 py-1.5 shadow-card' : ''
-          }`}
+          className="flex shrink-0 items-center transition-all"
         >
           <Image
             src="/trylinqr.png"
@@ -92,7 +88,7 @@ export default function Navbar() {
             width={150}
             height={42}
             priority
-            className={transparent ? 'h-7 w-auto sm:h-8' : 'h-9 w-auto sm:h-10'}
+            className="h-8 w-auto sm:h-10"
           />
         </Link>
 
@@ -101,7 +97,6 @@ export default function Navbar() {
             href="/explore"
             label="Explore"
             active={pathname === '/explore'}
-            transparent={transparent}
           />
           <div
             className="relative"
@@ -109,11 +104,7 @@ export default function Navbar() {
             onMouseLeave={() => setCats(false)}
           >
             <button
-              className={`flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                transparent
-                  ? 'text-white/85 hover:text-white'
-                  : 'text-obsidian/75 hover:text-brand-700'
-              }`}
+              className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold text-obsidian/75 transition-colors hover:text-brand-700"
             >
               Categories
               <ChevronDown className="h-3.5 w-3.5" />
@@ -149,42 +140,27 @@ export default function Navbar() {
             </AnimatePresence>
           </div>
           <NavLink
+            href="/blogs"
+            label="Blog"
+            active={pathname.startsWith('/blogs')}
+          />
+          <NavLink
             href="/explore?price=free"
             label="Free Events"
-            transparent={transparent}
           />
         </div>
 
-        <form onSubmit={submitSearch} className="ml-auto hidden flex-1 lg:block">
-          <div className="relative mx-auto max-w-sm">
-            <Search
-              className={`pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${
-                transparent ? 'text-white/55' : 'text-ink-muted'
-              }`}
-            />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search events, cities, organizers…"
-              className={`w-full rounded-xl py-2.5 pl-9 pr-3 text-sm transition-colors focus:outline-none focus:ring-2 ${
-                transparent
-                  ? 'border border-white/15 bg-white/10 text-white placeholder:text-white/55 backdrop-blur-md focus:border-white/40 focus:bg-white/20 focus:ring-white/20'
-                  : 'border border-ink-line bg-pearl text-obsidian placeholder:text-ink-muted focus:border-brand-700 focus:bg-white focus:ring-brand-700/15'
-              }`}
-            />
-          </div>
-        </form>
+        {/* combined location + search — right side */}
+        <div className="ml-auto hidden flex-1 justify-end lg:flex">
+          <HeaderSearchBar dark={false} />
+        </div>
 
         <div className="ml-auto flex items-center gap-1.5 lg:ml-0">
           {session ? (
             <>
               <Link
                 href="/notifications"
-                className={`relative grid h-10 w-10 place-items-center rounded-xl ${
-                  transparent
-                    ? 'text-white/85 hover:bg-white/15'
-                    : 'text-obsidian/75 hover:bg-pearl'
-                }`}
+                className="relative grid h-10 w-10 place-items-center rounded-xl text-obsidian/75 hover:bg-pearl"
               >
                 <Bell className="h-5 w-5" />
                 {unread > 0 && (
@@ -196,11 +172,7 @@ export default function Navbar() {
               <div className="relative hidden lg:block">
                 <button
                   onClick={() => setMenu((m) => !m)}
-                  className={`flex items-center gap-2 rounded-xl border py-1.5 pl-1.5 pr-3 ${
-                    transparent
-                      ? 'border-white/15 bg-white/10 text-white backdrop-blur-md hover:bg-white/20'
-                      : 'border-ink-line bg-white text-obsidian hover:bg-pearl'
-                  }`}
+                  className="flex items-center gap-2 rounded-xl border border-ink-line bg-white py-1.5 pl-1.5 pr-3 text-obsidian hover:bg-pearl"
                 >
                   <Avatar user={session.user} />
                   <span className="max-w-[100px] truncate text-sm font-semibold">
@@ -254,11 +226,7 @@ export default function Navbar() {
             <div className="hidden items-center gap-2 lg:flex">
               <Link
                 href="/login"
-                className={`rounded-xl px-4 py-2 text-sm font-semibold ${
-                  transparent
-                    ? 'text-white/85 hover:text-white'
-                    : 'text-obsidian/75 hover:text-brand-700'
-                }`}
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-obsidian/75 hover:text-brand-700"
               >
                 Log in
               </Link>
@@ -273,11 +241,7 @@ export default function Navbar() {
 
           <button
             onClick={() => setOpen(true)}
-            className={`grid h-10 w-10 place-items-center rounded-xl lg:hidden ${
-              transparent
-                ? 'text-white hover:bg-white/15'
-                : 'text-obsidian hover:bg-pearl'
-            }`}
+            className="grid h-10 w-10 place-items-center rounded-xl text-obsidian hover:bg-pearl lg:hidden"
           >
             <Menu className="h-5 w-5" />
           </button>
@@ -315,6 +279,9 @@ export default function Navbar() {
                 >
                   <X className="h-5 w-5" />
                 </button>
+              </div>
+              <div className="mb-3">
+                <HeaderLocationPicker />
               </div>
               <form onSubmit={submitSearch} className="mb-2">
                 <div className="relative">
@@ -378,23 +345,17 @@ export default function Navbar() {
   );
 }
 
-function NavLink({ href, label, active, transparent }) {
-  const base = transparent
-    ? active
-      ? 'text-white'
-      : 'text-white/85 hover:text-white'
-    : active
-    ? 'text-brand-700'
-    : 'text-obsidian/75 hover:text-brand-700';
-  const underline = transparent ? 'bg-white' : 'bg-brand-700';
+function NavLink({ href, label, active }) {
   return (
     <Link
       href={href}
-      className={`group relative rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${base}`}
+      className={`group relative rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+        active ? 'text-brand-700' : 'text-obsidian/75 hover:text-brand-700'
+      }`}
     >
       {label}
       <span
-        className={`absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full ${underline} transition-transform duration-200 ${
+        className={`absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-brand-700 transition-transform duration-200 ${
           active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
         }`}
       />

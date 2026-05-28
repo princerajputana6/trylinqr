@@ -26,6 +26,28 @@ const UserSchema = new mongoose.Schema(
     orgDescription: { type: String },
     razorpayAccountId: { type: String },
     verifyToken: { type: String },
+    // Organizer payout details — collected on /dashboard/payouts.
+    bankAccount: {
+      accountHolderName: { type: String, trim: true },
+      accountNumber: { type: String, trim: true },
+      ifsc: { type: String, trim: true, uppercase: true },
+      bankName: { type: String, trim: true },
+      branch: { type: String, trim: true },
+      panNumber: { type: String, trim: true, uppercase: true },
+      upiId: { type: String, trim: true },
+      // Verification proofs uploaded to Cloudinary (PDF or image)
+      cancelledChequeUrl: { type: String, trim: true },
+      cancelledChequeName: { type: String, trim: true },
+      accountStatementUrl: { type: String, trim: true },
+      accountStatementName: { type: String, trim: true },
+      verificationStatus: {
+        type: String,
+        enum: ['unverified', 'pending', 'verified', 'rejected'],
+        default: 'unverified',
+      },
+      verificationNote: { type: String },
+      updatedAt: { type: Date },
+    },
   },
   { timestamps: true }
 );
