@@ -3,16 +3,14 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import Groq from 'groq-sdk';
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
-
 export async function POST(req) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !['admin', 'superadmin'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const { title, category = 'news' } = await req.json();
 
