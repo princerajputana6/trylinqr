@@ -60,7 +60,7 @@ export default function EventCard({ event, index = 0 }) {
               alt={event.title}
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-sand-50 via-sand-50/0 to-transparent" />
+            <div className="absolute inset-0 bg-sand-50/30" />
 
             <span
               className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-card backdrop-blur"

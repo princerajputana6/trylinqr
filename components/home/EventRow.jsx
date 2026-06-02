@@ -15,7 +15,8 @@ export default function EventRow({ title, subtitle, events, viewAllHref, eyebrow
   };
 
   return (
-    <section className="container-page py-10">
+    <section className="bg-white py-14">
+      <div className="container-page">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -103,6 +104,7 @@ export default function EventRow({ title, subtitle, events, viewAllHref, eyebrow
           </div>
         ))}
       </motion.div>
+      </div>
     </section>
   );
 }

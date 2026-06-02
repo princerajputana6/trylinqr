@@ -75,7 +75,10 @@ export default function Navbar() {
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-50 bg-gradient-to-b from-white/95 via-white/80 to-white/10 backdrop-blur-sm transition-all duration-300"
+      className={`fixed inset-x-0 top-0 z-50 !bg-white transition-shadow duration-300 ${
+        scrolled ? 'shadow-sm' : ''
+      }`}
+      style={{ backgroundColor: '#ffffff' }}
     >
       <nav className="container-page flex h-[68px] items-center gap-4">
         <Link

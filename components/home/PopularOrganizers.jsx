@@ -8,7 +8,8 @@ import { categoryBySlug } from '@/lib/constants';
 export default function PopularOrganizers({ organizers = [] }) {
   if (!organizers.length) return null;
   return (
-    <section className="container-page py-16">
+    <section className="bg-white py-16">
+      <div className="container-page">
       <div className="mb-8 flex items-end justify-between gap-3">
         <div>
           <p className="section-eyebrow">Trusted hosts</p>
@@ -77,6 +78,7 @@ export default function PopularOrganizers({ organizers = [] }) {
           </motion.div>
         ))}
       </div>
+      </div>
     </section>
   );
 }
@@ -86,7 +88,7 @@ function Avatar({ org }) {
     org.avatar ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(
       org.orgName || org.name || 'O'
-    )}&background=710014&color=fff&bold=true&size=128`;
+    )}&background=944268&color=fff&bold=true&size=128`;
   return (
     <img
       src={src}

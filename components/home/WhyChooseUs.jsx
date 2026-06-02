@@ -28,7 +28,8 @@ const items = [
 
 export default function WhyChooseUs() {
   return (
-    <section className="container-page py-20">
+    <section className="bg-white py-20">
+      <div className="container-page">
       <div className="mx-auto mb-12 max-w-2xl text-center">
         <p className="section-eyebrow">Why TryLinqr</p>
         <h2 className="mt-2 font-display text-3xl font-extrabold text-obsidian sm:text-4xl">
@@ -64,6 +65,7 @@ export default function WhyChooseUs() {
             </motion.div>
           );
         })}
+      </div>
       </div>
     </section>
   );

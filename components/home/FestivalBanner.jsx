@@ -15,8 +15,9 @@ export default function FestivalBanner({ event }) {
     'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1800&q=75';
 
   return (
-    <section className="container-page py-16">
-      <p className="section-eyebrow mb-3">Don&apos;t miss</p>
+    <section className="bg-white py-16">
+      <div className="container-page">
+      <p className="section-eyebrow mb-3 text-obsidian">Don&apos;t miss</p>
       <h2 className="font-display text-3xl font-extrabold text-obsidian sm:text-4xl">
         Upcoming spotlight
       </h2>
@@ -35,9 +36,8 @@ export default function FestivalBanner({ event }) {
               alt={event.title}
               className="h-[400px] w-full object-cover transition-transform duration-1000 group-hover:scale-105 sm:h-[460px]"
             />
-            {/* dark cinematic overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-obsidian via-obsidian/70 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-transparent to-transparent" />
+            {/* solid scrim — no gradient (single dark overlay for text legibility) */}
+            <div className="absolute inset-0 bg-obsidian/55" />
 
             {/* content */}
             <div className="absolute inset-0 flex items-end">
@@ -85,6 +85,7 @@ export default function FestivalBanner({ event }) {
           </div>
         </Link>
       </motion.div>
+      </div>
     </section>
   );
 }

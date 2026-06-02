@@ -9,31 +9,28 @@ const reviews = [
     role: 'Concert enthusiast · Mumbai',
     body: 'TryLinqr is the only app I check now. Booked an indie gig in 20 seconds and the QR check-in at the door felt premium.',
     rating: 5,
-    avatar: 'https://ui-avatars.com/api/?name=Aanya+Verma&background=710014&color=fff',
+    avatar: 'https://ui-avatars.com/api/?name=Aanya+Verma&background=944268&color=fff',
   },
   {
     name: 'Rohan Sharma',
     role: 'Workshop organizer · Bengaluru',
     body: 'I sold out my first photography workshop here. The dashboard, analytics and zero-fuss payouts made it effortless.',
     rating: 5,
-    avatar: 'https://ui-avatars.com/api/?name=Rohan+Sharma&background=b38f6f&color=fff',
+    avatar: 'https://ui-avatars.com/api/?name=Rohan+Sharma&background=944268&color=fff',
   },
   {
     name: 'Priya Kapoor',
     role: 'Festival-goer · Delhi',
     body: 'The discovery feed surfaces events I never would have found. The whole experience feels handcrafted — not generic.',
     rating: 5,
-    avatar: 'https://ui-avatars.com/api/?name=Priya+Kapoor&background=710014&color=fff',
+    avatar: 'https://ui-avatars.com/api/?name=Priya+Kapoor&background=944268&color=fff',
   },
 ];
 
 export default function Testimonials() {
   return (
-    <section className="relative overflow-hidden py-20">
-      <div className="absolute -left-32 top-1/2 h-[400px] w-[400px] -translate-y-1/2 rounded-full bg-brand-700/10 blur-[140px]" />
-      <div className="absolute -right-32 top-1/2 h-[400px] w-[400px] -translate-y-1/2 rounded-full bg-sand-400/20 blur-[140px]" />
-
-      <div className="container-page relative">
+    <section className="bg-white py-20">
+      <div className="container-page">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <p className="section-eyebrow">Loved by</p>
           <h2 className="mt-2 font-display text-3xl font-extrabold text-obsidian sm:text-4xl">

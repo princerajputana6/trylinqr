@@ -25,7 +25,8 @@ export default function FeaturedList({
   };
 
   return (
-    <section className="container-page py-20">
+    <section className="bg-white py-20">
+      <div className="container-page">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -127,6 +128,7 @@ export default function FeaturedList({
           </Link>
         </motion.div>
       </motion.div>
+      </div>
     </section>
   );
 }

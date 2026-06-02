@@ -12,12 +12,10 @@ export default function OrganizerCTA() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-60px' }}
         transition={{ duration: 0.6 }}
-        className="relative overflow-hidden rounded-3xl border border-obsidian-line bg-obsidian p-10 text-white sm:p-14"
+        className="relative overflow-hidden rounded-3xl bg-obsidian p-10 text-white sm:p-14"
       >
-        {/* layered ambience */}
-        <div className="absolute -left-32 -top-32 h-[440px] w-[440px] rounded-full bg-brand-700/35 blur-[140px]" />
-        <div className="absolute -right-32 -bottom-32 h-[440px] w-[440px] rounded-full bg-sand-500/25 blur-[140px]" />
-        <div className="bg-grid-dark absolute inset-0 opacity-30" />
+        {/* Single accent — one solid rose strip on the left edge. No gradients, no dual blur. */}
+        <div className="absolute inset-y-0 left-0 w-1.5 bg-brand-700" />
 
         <div className="relative grid items-center gap-8 lg:grid-cols-[1.2fr_0.8fr]">
           <div>

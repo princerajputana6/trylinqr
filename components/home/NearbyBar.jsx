@@ -59,7 +59,8 @@ export default function NearbyBar() {
   };
 
   return (
-    <section className="container-page -mt-10 mb-2">
+    <section className="bg-white">
+      <div className="container-page py-6">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -67,7 +68,6 @@ export default function NearbyBar() {
         transition={{ duration: 0.5 }}
         className="relative overflow-hidden rounded-2xl border border-ink-line bg-white p-5 shadow-card sm:p-6"
       >
-        <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-brand-700/10 blur-3xl" />
         <div className="relative flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div className="flex items-start gap-3">
             <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-700/[0.08] text-brand-700">
@@ -103,6 +103,7 @@ export default function NearbyBar() {
           </motion.button>
         </div>
       </motion.div>
+      </div>
     </section>
   );
 }

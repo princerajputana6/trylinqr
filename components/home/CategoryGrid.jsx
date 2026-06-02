@@ -6,7 +6,8 @@ import { CATEGORIES } from '@/lib/constants';
 
 export default function CategoryGrid() {
   return (
-    <section className="container-page py-20">
+    <section className="bg-white py-20">
+      <div className="container-page">
       <div className="mb-10 flex flex-col items-start justify-between gap-3 md:flex-row md:items-end">
         <div>
           <p className="section-eyebrow">Browse</p>
@@ -41,28 +42,22 @@ export default function CategoryGrid() {
                 <motion.div
                   whileHover={{ y: -6, scale: 1.04 }}
                   transition={{ type: 'spring', stiffness: 280, damping: 22 }}
-                  className="hover-glow group relative overflow-hidden rounded-2xl border border-ink-line bg-white p-5 shadow-card"
+                  className="hover-glow group relative overflow-hidden rounded-2xl p-5 shadow-card ring-1 ring-obsidian/5"
+                  style={{ backgroundColor: c.color }}
                 >
-                  <div
-                    className="absolute -right-6 -top-6 h-20 w-20 rounded-full opacity-25 blur-2xl transition-opacity group-hover:opacity-50"
-                    style={{ background: c.color }}
-                  />
-                  <div className="relative">
-                    <div
-                      className="grid h-11 w-11 place-items-center rounded-xl"
-                      style={{ background: `${c.color}1F`, color: c.color }}
-                    >
-                      <Icon className="h-5 w-5" strokeWidth={2.2} />
-                    </div>
-                    <p className="mt-3 text-sm font-semibold text-obsidian">
-                      {c.label}
-                    </p>
+                  {/* White icon chip — sits cleanly on the pastel card */}
+                  <div className="grid h-11 w-11 place-items-center rounded-xl bg-white text-obsidian shadow-sm">
+                    <Icon className="h-5 w-5" strokeWidth={2.2} />
                   </div>
+                  <p className="mt-3 text-sm font-semibold text-obsidian">
+                    {c.label}
+                  </p>
                 </motion.div>
               </Link>
             </motion.div>
           );
         })}
+      </div>
       </div>
     </section>
   );

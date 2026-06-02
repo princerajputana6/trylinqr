@@ -12,13 +12,13 @@ export default function StatsSection({ counts }) {
   ];
 
   return (
-    <section className="container-page mt-14">
+    <section className="bg-white py-14">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-50px' }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="card grid grid-cols-2 gap-4 p-6 sm:grid-cols-4"
+        className="container-page grid grid-cols-2 gap-4 sm:grid-cols-4"
       >
         {stats.map((s, i) => (
           <motion.div
