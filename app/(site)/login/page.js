@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { signIn, getSession } from 'next-auth/react';
 import AuthCard from '@/components/auth/AuthCard';
+import PasswordInput from '@/components/shared/PasswordInput';
 import { useToast } from '@/components/shared/Toast';
 
 function LoginInner() {
@@ -76,10 +77,9 @@ function LoginInner() {
         </div>
         <div>
           <label className="label">Password</label>
-          <input
-            type="password"
+          <PasswordInput
             required
-            className="input"
+            autoComplete="current-password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />

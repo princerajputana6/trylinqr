@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AuthCard from '@/components/auth/AuthCard';
+import PasswordInput from '@/components/shared/PasswordInput';
 import { useToast } from '@/components/shared/Toast';
 
 export default function AdminRegisterPage() {
@@ -117,11 +118,10 @@ export default function AdminRegisterPage() {
         </div>
         <div>
           <label className="label">Password</label>
-          <input
-            type="password"
+          <PasswordInput
             required
             minLength={6}
-            className="input"
+            autoComplete="new-password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />

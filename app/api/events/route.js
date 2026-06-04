@@ -82,11 +82,12 @@ export async function POST(req) {
       return fail('Add at least one ticket tier');
     }
 
+    // No more "pending superadmin approval" — organizers publish themselves.
     const event = await Event.create({
       ...body,
       slug: uniqueSlug(body.title),
       organizer: auth.user.id,
-      status: body.publish ? 'pending' : 'draft',
+      status: body.publish ? 'published' : 'draft',
     });
 
     return ok({ event }, 201);

@@ -69,24 +69,20 @@ export async function PUT(req, { params }) {
       if (body[f] !== undefined) event[f] = body[f];
     }
 
-    // status transitions
+    // Status transitions — organizers manage their own publish state now.
+    // (Previously only superadmin could move an event to 'published'.)
     if (body.status) {
-      if (auth.user.role === 'superadmin') {
+      const allowed = ['draft', 'published', 'cancelled', 'completed'];
+      if (allowed.includes(body.status)) {
+        const wasPublished = event.status === 'published';
         event.status = body.status;
-        if (body.status === 'published') {
+        if (!wasPublished && body.status === 'published') {
           await notify(
             event.organizer,
             'event_approved',
             `Your event "${event.title}" is now live`,
             `/events/${event.slug}`
           );
-        }
-      } else {
-        // admins can move between draft/pending/published(unpublish->draft) limited
-        if (['draft', 'pending'].includes(body.status)) {
-          event.status = body.status;
-        } else if (body.status === 'cancelled') {
-          event.status = 'cancelled';
         }
       }
     }

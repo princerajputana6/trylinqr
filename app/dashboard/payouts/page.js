@@ -13,6 +13,8 @@ import {
   FileText,
   ScrollText,
   Clock,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import { useToast } from '@/components/shared/Toast';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -103,6 +105,60 @@ export default function PayoutsPage() {
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const setFile = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
+
+  // ── IFSC verification (via Razorpay's public IFSC API, proxied) ──
+  const [ifscState, setIfscState] = useState({
+    checking: false,
+    valid: null,        // null = untested, true = valid, false = invalid
+    message: '',
+  });
+
+  const verifyIfsc = async () => {
+    const code = String(form.ifsc || '').toUpperCase().trim();
+    if (!code) {
+      setIfscState({ checking: false, valid: false, message: 'Enter an IFSC first' });
+      return;
+    }
+    setIfscState({ checking: true, valid: null, message: '' });
+    try {
+      const r = await fetch(`/api/payouts/ifsc/${encodeURIComponent(code)}`);
+      const d = await r.json();
+      if (!d.valid) {
+        setIfscState({
+          checking: false,
+          valid: false,
+          message: d.error || 'Invalid IFSC',
+        });
+        return;
+      }
+      // success — fill bank name + branch from Razorpay's response.
+      setForm((f) => ({
+        ...f,
+        ifsc: d.ifsc,
+        bankName: d.bank || f.bankName,
+        branch: d.branch || f.branch,
+      }));
+      setIfscState({
+        checking: false,
+        valid: true,
+        message: `${d.bank} · ${d.branch}${d.city ? `, ${d.city}` : ''}`,
+      });
+    } catch {
+      setIfscState({
+        checking: false,
+        valid: false,
+        message: 'Could not reach the IFSC service',
+      });
+    }
+  };
+
+  // reset verify state if the user edits the IFSC after a successful check
+  const onIfscChange = (e) => {
+    setForm((f) => ({ ...f, ifsc: e.target.value }));
+    if (ifscState.valid !== null) {
+      setIfscState({ checking: false, valid: null, message: '' });
+    }
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -236,12 +292,45 @@ export default function PayoutsPage() {
               </div>
               <div>
                 <label className="label">IFSC code</label>
-                <input
-                  className="input uppercase"
-                  placeholder="e.g. HDFC0001234"
-                  value={form.ifsc}
-                  onChange={set('ifsc')}
-                />
+                <div className="flex gap-2">
+                  <input
+                    className="input uppercase"
+                    placeholder="e.g. HDFC0001234"
+                    value={form.ifsc}
+                    onChange={onIfscChange}
+                    onBlur={() => {
+                      // auto-verify on blur if the format looks right
+                      if (/^[A-Z]{4}0[A-Z0-9]{6}$/i.test(form.ifsc || '')) {
+                        verifyIfsc();
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={verifyIfsc}
+                    disabled={ifscState.checking}
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-brand-700/30 bg-brand-700/[0.06] px-3 text-sm font-semibold text-brand-700 hover:bg-brand-700/[0.12] disabled:opacity-60"
+                  >
+                    {ifscState.checking ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                    )}
+                    Verify
+                  </button>
+                </div>
+                {ifscState.valid === true && (
+                  <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-emerald-700">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    {ifscState.message}
+                  </p>
+                )}
+                {ifscState.valid === false && (
+                  <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-brand-700">
+                    <AlertCircle className="h-3.5 w-3.5" />
+                    {ifscState.message}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="label">Bank name</label>
