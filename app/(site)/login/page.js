@@ -2,13 +2,12 @@
 
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { signIn, getSession } from 'next-auth/react';
 import AuthCard from '@/components/auth/AuthCard';
 import { useToast } from '@/components/shared/Toast';
 
 function LoginInner() {
-  const router = useRouter();
   const sp = useSearchParams();
   const { toast } = useToast();
   const [form, setForm] = useState({ email: '', password: '' });
@@ -28,12 +27,27 @@ function LoginInner() {
     }
     const session = await getSession();
     toast('Welcome back!', 'success');
+
+    // Decide where to send the user.
     const callbackUrl = sp.get('callbackUrl');
-    if (callbackUrl) router.push(callbackUrl);
-    else if (session?.user?.role === 'superadmin')
-      router.push('/superadmin/dashboard');
-    else if (session?.user?.role === 'admin') router.push('/dashboard');
-    else router.push('/my-bookings');
+    let target;
+    if (callbackUrl && callbackUrl !== '/login') {
+      target = callbackUrl;
+    } else if (session?.user?.role === 'superadmin') {
+      target = '/superadmin/dashboard';
+    } else if (session?.user?.role === 'admin') {
+      target = '/dashboard';
+    } else {
+      target = '/my-bookings';
+    }
+
+    // IMPORTANT: hard-navigate, not router.push.
+    // The NextAuth session cookie was set on the signIn response, but
+    // router.push does a soft client navigation that triggers Edge middleware
+    // before the cookie is reliably attached to the next request —
+    // middleware then sees no token and bounces back to /login?callbackUrl=…
+    // A full page load guarantees the cookie ships with the request.
+    window.location.assign(target);
   };
 
   return (

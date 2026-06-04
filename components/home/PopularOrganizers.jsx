@@ -8,7 +8,7 @@ import { categoryBySlug } from '@/lib/constants';
 export default function PopularOrganizers({ organizers = [] }) {
   if (!organizers.length) return null;
   return (
-    <section className="bg-white py-16">
+    <section className="bg-white py-10">
       <div className="container-page">
       <div className="mb-8 flex items-end justify-between gap-3">
         <div>
@@ -84,16 +84,20 @@ export default function PopularOrganizers({ organizers = [] }) {
 }
 
 function Avatar({ org }) {
+  const firstCat = org.categories?.[0];
+  const bgHex = firstCat
+    ? (categoryBySlug(firstCat)?.color || '#944268').replace('#', '')
+    : '944268';
   const src =
     org.avatar ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(
       org.orgName || org.name || 'O'
-    )}&background=944268&color=fff&bold=true&size=128`;
+    )}&background=${bgHex}&color=3d2040&bold=true&size=128`;
   return (
     <img
       src={src}
       alt=""
-      className="h-12 w-12 shrink-0 rounded-xl object-cover ring-2 ring-sand-400/40"
+      className="h-12 w-12 shrink-0 rounded-xl object-cover"
     />
   );
 }

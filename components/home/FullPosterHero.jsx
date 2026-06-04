@@ -141,7 +141,7 @@ export default function FullPosterHero() {
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -52, opacity: 0 }}
                 transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-                className="font-display text-4xl font-extrabold text-brand-700 sm:text-5xl xl:text-[3.5rem]"
+                className="font-display text-4xl font-extrabold sm:text-5xl xl:text-[3.5rem]" style={{ color: '#f8c49c' }}
               >
                 {CYCLING_WORDS[wordIdx]}
               </motion.span>

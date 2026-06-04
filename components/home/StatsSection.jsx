@@ -5,14 +5,14 @@ import AnimatedCounter from '@/components/shared/AnimatedCounter';
 
 export default function StatsSection({ counts }) {
   const stats = [
-    { label: 'Live events', value: counts.events, suffix: '+' },
-    { label: 'Organizers', value: counts.organizers, suffix: '+' },
-    { label: 'Categories', value: 12 },
-    { label: 'Cities', value: 12 },
+    { label: 'Live events',  value: counts.events,    suffix: '+', color: '#efb3c7' },
+    { label: 'Organizers',  value: counts.organizers, suffix: '+', color: '#f8c49c' },
+    { label: 'Categories',  value: 12,                             color: '#a6c5dc' },
+    { label: 'Cities',      value: 12,                             color: '#c9ddb1' },
   ];
 
   return (
-    <section className="bg-white py-14">
+    <section className="bg-white py-8">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -38,7 +38,8 @@ export default function StatsSection({ counts }) {
             <motion.div
               whileHover={{ scale: 1.1 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="font-display text-3xl font-extrabold text-gradient sm:text-4xl"
+              className="font-display text-3xl font-extrabold sm:text-4xl"
+              style={{ color: s.color }}
             >
               <AnimatedCounter value={s.value} suffix={s.suffix || ''} />
             </motion.div>

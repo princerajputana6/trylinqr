@@ -17,7 +17,7 @@ export default function Stars({ value = 0, size = 14, onChange }) {
             style={{ width: size, height: size }}
             className={
               n <= Math.round(value)
-                ? 'fill-amber-400 text-amber-400'
+                ? 'fill-[#a6c5dc] text-[#a6c5dc]'
                 : 'text-obsidian/20'
             }
           />

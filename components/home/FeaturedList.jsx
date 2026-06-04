@@ -25,14 +25,14 @@ export default function FeaturedList({
   };
 
   return (
-    <section className="bg-white py-20">
+    <section className="bg-white py-12">
       <div className="container-page">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-50px' }}
         transition={{ duration: 0.6 }}
-        className="mx-auto mb-10 max-w-3xl text-center"
+        className="mx-auto mb-6 max-w-3xl text-center"
       >
         <motion.p
           initial={{ opacity: 0, y: 10 }}

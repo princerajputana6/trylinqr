@@ -15,14 +15,14 @@ export default function EventRow({ title, subtitle, events, viewAllHref, eyebrow
   };
 
   return (
-    <section className="bg-white py-14">
+    <section className="bg-white py-8">
       <div className="container-page">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-50px' }}
         transition={{ duration: 0.5 }}
-        className="mb-6 flex items-end justify-between gap-4"
+        className="mb-4 flex items-end justify-between gap-4"
       >
         <div>
           {eyebrow && (

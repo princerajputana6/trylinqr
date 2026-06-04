@@ -48,7 +48,7 @@ export default function EventCard({ event, index = 0 }) {
         <motion.article
           whileHover={{ y: -5 }}
           transition={{ type: 'spring', stiffness: 280, damping: 22 }}
-          className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-brand-900/12 bg-sand-50 shadow-card"
+          className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-brand-900/12 bg-white shadow-card"
         >
           {/* subtle paper noise */}
           <div className="bg-noise pointer-events-none absolute inset-0 opacity-[0.18]" />
@@ -88,10 +88,10 @@ export default function EventCard({ event, index = 0 }) {
 
           {/* CONTENT */}
           <div className="relative flex flex-1 flex-col px-5 py-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-700">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em]" style={{ color: cat.color }}>
               {cat.label}
             </p>
-            <h3 className="mt-1.5 line-clamp-2 min-h-[2.5em] font-display text-base font-bold leading-snug text-brand-900 transition-colors group-hover:text-brand-700">
+            <h3 className="mt-1.5 line-clamp-2 min-h-[2.5em] font-display text-base font-bold leading-snug transition-colors" style={{ color: cat.color }}>
               {event.title}
             </h3>
 
