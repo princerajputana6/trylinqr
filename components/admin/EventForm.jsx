@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { haversineKm } from '@/lib/bikeShipping';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -102,6 +103,46 @@ export default function EventForm({ initial, eventId }) {
   const set = (key, value) => setForm((f) => ({ ...f, [key]: value }));
   const setVenue = (key, value) =>
     setForm((f) => ({ ...f, venue: { ...f.venue, [key]: value } }));
+
+  // Track whether the organizer has manually edited distance/duration so
+  // we don't keep overwriting their value once they take control.
+  const [touched, setTouched] = useState({ distanceKm: false, durationDays: false });
+
+  // Auto-fill distance + duration from coordinates whenever both ends have
+  // lat/lng AND the user hasn't manually overridden the values.
+  useEffect(() => {
+    if (form.category !== 'bike-ride') return;
+    const v = form.venue || {};
+    const d = form.rideDetails?.destination || {};
+    if (!v.lat || !v.lng || !d.lat || !d.lng) return;
+    const km = haversineKm(
+      { lat: Number(v.lat), lng: Number(v.lng) },
+      { lat: Number(d.lat), lng: Number(d.lng) },
+    );
+    if (!isFinite(km) || km <= 0) return;
+    // Road distance is roughly 1.25–1.4× straight-line — bias up a bit so
+    // the suggestion is closer to actual riding distance.
+    const roadKm = Math.round(km * 1.3);
+    // Rough day estimate: a comfortable ride day is ~300 km on Indian
+    // highways. 1 day for ≤300, 2 days for ≤600, etc.
+    const days = Math.max(1, Math.ceil(roadKm / 300));
+
+    setForm((f) => {
+      const next = { ...f, rideDetails: { ...f.rideDetails } };
+      if (!touched.distanceKm) next.rideDetails.distanceKm = String(roadKm);
+      if (!touched.durationDays) next.rideDetails.durationDays = String(days);
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    form.category,
+    form.venue?.lat,
+    form.venue?.lng,
+    form.rideDetails?.destination?.lat,
+    form.rideDetails?.destination?.lng,
+    touched.distanceKm,
+    touched.durationDays,
+  ]);
   const setRide = (key, value) =>
     setForm((f) => ({ ...f, rideDetails: { ...f.rideDetails, [key]: value } }));
   const toggleInList = (key, value) =>
@@ -642,25 +683,41 @@ export default function EventForm({ initial, eventId }) {
 
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div>
-                    <label className="label">Distance (km)</label>
+                    <label className="label">
+                      Distance (km){' '}
+                      <span className="text-[10px] font-normal text-ink-muted">
+                        auto-filled from map · editable
+                      </span>
+                    </label>
                     <input
                       type="number"
                       min="0"
                       className="input"
-                      placeholder="e.g. 65"
+                      placeholder="Pick a destination to auto-fill"
                       value={form.rideDetails.distanceKm}
-                      onChange={(e) => setRide('distanceKm', e.target.value)}
+                      onChange={(e) => {
+                        setRide('distanceKm', e.target.value);
+                        setTouched((t) => ({ ...t, distanceKm: true }));
+                      }}
                     />
                   </div>
                   <div>
-                    <label className="label">Duration (days)</label>
+                    <label className="label">
+                      Duration (days){' '}
+                      <span className="text-[10px] font-normal text-ink-muted">
+                        auto-estimated · editable
+                      </span>
+                    </label>
                     <input
                       type="number"
                       min="1"
                       className="input"
                       placeholder="1 for day rides"
                       value={form.rideDetails.durationDays}
-                      onChange={(e) => setRide('durationDays', e.target.value)}
+                      onChange={(e) => {
+                        setRide('durationDays', e.target.value);
+                        setTouched((t) => ({ ...t, durationDays: true }));
+                      }}
                     />
                   </div>
                   <div>
