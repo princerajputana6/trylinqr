@@ -30,6 +30,7 @@ import {
 import { SUB_CATEGORIES, suggestTags } from '@/lib/eventTaxonomy';
 import { useToast } from '@/components/shared/Toast';
 import FieldError from '@/components/admin/FieldError';
+import PromotionPicker from '@/components/admin/PromotionPicker';
 
 function buildSteps(category) {
   const steps = ['Basics', 'Date & Venue', 'Media', 'Tickets', 'Policies'];
@@ -918,26 +919,21 @@ export default function EventForm({ initial, eventId }) {
                     }
                   />
                 </div>
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-ink-line bg-white p-4 hover:border-brand-700/40">
-                  <input
-                    type="checkbox"
-                    className="mt-1 h-4 w-4 accent-brand-700"
-                    checked={!!form.isFeatured}
-                    onChange={(e) => set('isFeatured', e.target.checked)}
-                  />
-                  <div>
-                    <p className="text-sm font-semibold text-obsidian">
-                      Show this event in the homepage hero slider
-                    </p>
-                    <p className="text-xs text-obsidian/65">
-                      Featured events appear in the prominent slider at the top
-                      of TryLinqr.
-                    </p>
-                  </div>
-                </label>
+                <PromotionPicker
+                  eventId={eventId}
+                  eventTitle={form.title || 'this event'}
+                  alreadyActive={[
+                    initial?.isFeatured && 'hero',
+                    initial?.inFeaturedList && 'list',
+                    initial?.inSpotlight && 'spotlight',
+                    initial?.inTrending && 'trending',
+                  ].filter(Boolean)}
+                />
                 <p className="rounded-xl bg-white/5 p-3 text-sm text-ink-muted">
                   Submit will publish your event immediately if your organizer
                   account is verified. Saving as draft keeps it private.
+                  Promotions can be purchased here on the edit page after the
+                  event is saved.
                 </p>
               </>
             )}

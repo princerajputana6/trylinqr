@@ -99,6 +99,24 @@ const EventSchema = new mongoose.Schema(
     ticketTiers: [TicketTierSchema],
     tags: [{ type: String }],
     isFeatured: { type: Boolean, default: false, index: true },
+    // Paid placement flags. Set true ONLY after a successful Razorpay
+    // payment via /api/events/[id]/promote/verify. Surface in:
+    //   hero      → homepage hero slider (FullPosterHero)
+    //   list      → Featured Upcoming Events row
+    //   spotlight → SpotlightCarousel
+    //   trending  → Trending Now row
+    inSpotlight: { type: Boolean, default: false, index: true },
+    inFeaturedList: { type: Boolean, default: false, index: true },
+    inTrending: { type: Boolean, default: false, index: true },
+    promotionPayments: [
+      {
+        type: { type: String, enum: ['hero', 'list', 'spotlight', 'trending'] },
+        amount: Number,
+        razorpayOrderId: String,
+        razorpayPaymentId: String,
+        paidAt: { type: Date, default: Date.now },
+      },
+    ],
     status: {
       type: String,
       enum: ['draft', 'pending', 'published', 'cancelled', 'completed'],

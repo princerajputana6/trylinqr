@@ -16,6 +16,8 @@ import {
   getRecentEvents,
   getPopularOrganizers,
   getPlatformCounts,
+  getSpotlightEvents,
+  getFeaturedListEvents,
 } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
@@ -26,9 +28,11 @@ export default async function HomePage() {
     trending = [],
     recent = [],
     organizers = [],
+    paidSpotlight = [],
+    paidList = [],
     counts = { events: 0, organizers: 0, cities: 0, categories: 0 };
   try {
-    [featured, weekend, trending, recent, organizers, counts] =
+    [featured, weekend, trending, recent, organizers, counts, paidSpotlight, paidList] =
       await Promise.all([
         getFeaturedEvents(),
         getWeekendEvents(),
@@ -36,23 +40,25 @@ export default async function HomePage() {
         getRecentEvents(6),
         getPopularOrganizers(6),
         getPlatformCounts(),
+        getSpotlightEvents(6),
+        getFeaturedListEvents(8),
       ]);
   } catch (e) {
     console.error('home data error', e);
   }
 
-  // Spotlight carousel — prefer events explicitly marked featured by
-  // organizers, then trending. Up to 6.
+  // Spotlight carousel — paid 'spotlight' placements first, then fall back
+  // to featured + trending so the section is never empty in dev.
   const spotlightSeen = new Set();
-  const spotlightEvents = [...featured, ...trending]
+  const spotlightEvents = [...paidSpotlight, ...featured, ...trending]
     .filter(
       (e) => e && !spotlightSeen.has(String(e._id)) && spotlightSeen.add(String(e._id)),
     )
     .slice(0, 6);
 
-  // Featured upcoming list (auto-sliding) — merge featured + weekend + trending.
+  // Featured upcoming list (auto-sliding) — paid 'list' first, then merge.
   const upcomingSeen = new Set();
-  const upcoming = [...featured, ...weekend, ...trending, ...recent]
+  const upcoming = [...paidList, ...featured, ...weekend, ...trending, ...recent]
     .filter(
       (e) => e && !upcomingSeen.has(String(e._id)) && upcomingSeen.add(String(e._id)),
     )
