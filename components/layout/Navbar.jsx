@@ -151,11 +151,6 @@ export default function Navbar() {
             href="/explore?price=free"
             label="Free Events"
           />
-          <NavLink
-            href="/admin-register"
-            label="Join as Organizer"
-            active={pathname === '/admin-register'}
-          />
         </div>
 
         {/* combined location + search — right side */}
@@ -232,21 +227,25 @@ export default function Navbar() {
             </>
           ) : (
             <div className="hidden items-center gap-2 lg:flex">
+              {/* "Join as Organizer" — single-line CTA, always visible on lg+ */}
               <Link
                 href="/admin-register"
-                className="rounded-xl border border-brand-700/30 px-4 py-2 text-sm font-semibold text-brand-700 transition-all hover:bg-brand-700/[0.06]"
+                className="whitespace-nowrap rounded-xl border border-brand-700/30 px-3 py-2 text-sm font-semibold text-brand-700 transition-all hover:bg-brand-700/[0.06]"
               >
                 Join as Organizer
               </Link>
               <Link
-                href="/login"
-                className="rounded-xl px-4 py-2 text-sm font-semibold text-obsidian/75 hover:text-brand-700"
+                /* preserve where the user came from so post-login returns there */
+                href={`/login?callbackUrl=${encodeURIComponent(
+                  pathname && pathname !== '/login' ? pathname : '/',
+                )}`}
+                className="whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold text-obsidian/75 hover:text-brand-700"
               >
                 Log in
               </Link>
               <Link
                 href="/register"
-                className="rounded-xl bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-glow transition-all hover:bg-brand-800 hover:-translate-y-0.5"
+                className="whitespace-nowrap rounded-xl bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-glow transition-all hover:bg-brand-800 hover:-translate-y-0.5"
               >
                 Sign up
               </Link>
@@ -340,7 +339,12 @@ export default function Navbar() {
                 </>
               ) : (
                 <div className="mt-3 flex flex-col gap-2">
-                  <Link href="/login" className="btn-outline w-full">
+                  <Link
+                    href={`/login?callbackUrl=${encodeURIComponent(
+                      pathname && pathname !== '/login' ? pathname : '/',
+                    )}`}
+                    className="btn-outline w-full"
+                  >
                     Log in
                   </Link>
                   <Link href="/register" className="btn-primary w-full">
