@@ -3,7 +3,7 @@ import FeaturedList from '@/components/home/FeaturedList';
 import CategoryGrid from '@/components/home/CategoryGrid';
 import EventRow from '@/components/home/EventRow';
 import StatsSection from '@/components/home/StatsSection';
-import FestivalBanner from '@/components/home/FestivalBanner';
+import SpotlightCarousel from '@/components/home/SpotlightCarousel';
 import PopularOrganizers from '@/components/home/PopularOrganizers';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
 import Testimonials from '@/components/home/Testimonials';
@@ -26,7 +26,7 @@ export default async function HomePage() {
     trending = [],
     recent = [],
     organizers = [],
-    counts = { events: 0, organizers: 0 };
+    counts = { events: 0, organizers: 0, cities: 0, categories: 0 };
   try {
     [featured, weekend, trending, recent, organizers, counts] =
       await Promise.all([
@@ -41,46 +41,56 @@ export default async function HomePage() {
     console.error('home data error', e);
   }
 
-  // Hero — prefer featured then recent (need at least the banner image)
-  const heroSlides = [...featured, ...recent]
-    .filter((e) => e && e.bannerImage)
-    .reduce((acc, e) => {
-      if (!acc.find((x) => String(x._id) === String(e._id))) acc.push(e);
-      return acc;
-    }, [])
+  // Spotlight carousel — prefer events explicitly marked featured by
+  // organizers, then trending. Up to 6.
+  const spotlightSeen = new Set();
+  const spotlightEvents = [...featured, ...trending]
+    .filter(
+      (e) => e && !spotlightSeen.has(String(e._id)) && spotlightSeen.add(String(e._id)),
+    )
     .slice(0, 6);
 
-  const spotlight = featured[0] || trending[0] || recent[0];
-  // Merge featured + weekend + trending so the Featured list always has plenty
-  const seen = new Set();
+  // Featured upcoming list (auto-sliding) — merge featured + weekend + trending.
+  const upcomingSeen = new Set();
   const upcoming = [...featured, ...weekend, ...trending, ...recent]
-    .filter((e) => e && !seen.has(String(e._id)) && seen.add(String(e._id)))
+    .filter(
+      (e) => e && !upcomingSeen.has(String(e._id)) && upcomingSeen.add(String(e._id)),
+    )
     .slice(0, 8);
 
   return (
     <>
+      {/* 1. Hero */}
       <FullPosterHero />
 
+      {/* 2. Nearby bar (utility — sits between hero and content) */}
       <NearbyBar />
 
-      <StatsSection counts={counts} />
+      {/* 3. Spotlight carousel */}
+      <SpotlightCarousel events={spotlightEvents} />
 
+      {/* 4. Featured upcoming events (auto-sliding card row) */}
       <FeaturedList
         events={upcoming}
         title="Featured Upcoming Events"
         subtitle="Keep checking back to stay informed about the activities in our community and reserve your preferred seats in advance."
+        autoplay
       />
 
+      {/* 5. Every kind of experience — categories */}
       <CategoryGrid />
 
-      {spotlight && <FestivalBanner event={spotlight} />}
-
+      {/* 6. Trending now (auto-sliding card row) */}
       <EventRow
         title="Trending now"
         subtitle="What everyone's booking right now"
         events={trending}
         viewAllHref="/explore?sort=popular"
+        autoplay
       />
+
+      {/* 7. Dynamic platform stats */}
+      <StatsSection counts={counts} />
 
       <PopularOrganizers organizers={organizers} />
 

@@ -23,7 +23,8 @@ const COMPANY = [
 const SUPPORT = [
   { href: '/support', label: 'Help & Support' },
   { href: '/support/new', label: 'Raise a ticket' },
-  { href: '/bike-shipping', label: 'Bike shipping' },
+  // Bike shipping calculator hidden for now — uncomment to bring it back.
+  // { href: '/bike-shipping', label: 'Bike shipping' },
   { href: '/my-bookings', label: 'My bookings' },
   { href: '/profile', label: 'My profile' },
 ];
@@ -85,12 +86,15 @@ export default function Footer() {
             >
               <Mail className="h-4 w-4 text-sand-400" /> hello@trylinqr.com
             </a>
+            {/* Bike shipping calculator hidden for now — keep the markup
+                commented so it can be brought back easily.
             <Link
               href="/bike-shipping"
               className="inline-flex items-center gap-2 text-white/75 hover:text-sand-400"
             >
               <Truck className="h-4 w-4 text-sand-400" /> Bike shipping calculator
             </Link>
+            */}
             <span className="inline-flex items-center gap-2 text-white/60">
               <ShieldCheck className="h-4 w-4 text-sand-400" /> Secure payments
               by Razorpay

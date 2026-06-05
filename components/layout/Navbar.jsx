@@ -208,9 +208,11 @@ export default function Navbar() {
                       <MenuItem href="/profile" icon={User}>
                         Profile
                       </MenuItem>
+                      {/* Bike shipping menu hidden for now — uncomment to bring back.
                       <MenuItem href="/bike-shipping" icon={Truck}>
                         Bike Shipping
                       </MenuItem>
+                      */}
                       <MenuItem href="/support" icon={LifeBuoy}>
                         Help & Support
                       </MenuItem>
@@ -313,9 +315,11 @@ export default function Navbar() {
               <MobileItem href="/explore?price=free" icon={Sparkles}>
                 Free Events
               </MobileItem>
+              {/* Bike shipping hidden — uncomment to restore.
               <MobileItem href="/bike-shipping" icon={Truck}>
                 Bike Shipping
               </MobileItem>
+              */}
               {session ? (
                 <>
                   <MobileItem href={dashHref} icon={LayoutDashboard}>

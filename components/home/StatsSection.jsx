@@ -5,10 +5,10 @@ import AnimatedCounter from '@/components/shared/AnimatedCounter';
 
 export default function StatsSection({ counts }) {
   const stats = [
-    { label: 'Live events',  value: counts.events,    suffix: '+', color: '#efb3c7' },
-    { label: 'Organizers',  value: counts.organizers, suffix: '+', color: '#f8c49c' },
-    { label: 'Categories',  value: 12,                             color: '#a6c5dc' },
-    { label: 'Cities',      value: 12,                             color: '#c9ddb1' },
+    { label: 'Live events',  value: counts.events || 0,     suffix: '+', color: '#efb3c7' },
+    { label: 'Organizers',  value: counts.organizers || 0,  suffix: '+', color: '#f8c49c' },
+    { label: 'Categories',  value: counts.categories || 0,               color: '#a6c5dc' },
+    { label: 'Cities',      value: counts.cities || 0,                   color: '#c9ddb1' },
   ];
 
   return (

@@ -1,8 +1,8 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import VintageTicket from '@/components/shared/VintageTicket';
 
@@ -11,8 +11,12 @@ export default function FeaturedList({
   title = 'Featured Upcoming Events',
   subtitle = 'Hand-picked experiences across every kind of evening — swipe to browse the next drops.',
   viewAllHref = '/explore',
+  autoplay = false,
+  intervalMs = 5000,
 }) {
   const ref = useRef(null);
+  const [paused, setPaused] = useState(false);
+  const reduced = useReducedMotion();
   if (!events.length) return null;
 
   const scroll = (dir) => {
@@ -23,6 +27,25 @@ export default function FeaturedList({
     const step = slot ? slot.getBoundingClientRect().width + 24 : 480;
     node.scrollBy({ left: step * dir, behavior: 'smooth' });
   };
+
+  // Auto-slide: advance one slot every intervalMs. Pause on hover/touch.
+  // Loops back to the start when it reaches the end.
+  useEffect(() => {
+    if (!autoplay || reduced || paused) return;
+    const t = setInterval(() => {
+      const node = ref.current;
+      if (!node) return;
+      const slot = node.querySelector('[data-slot]');
+      const step = slot ? slot.getBoundingClientRect().width + 24 : 480;
+      const max = node.scrollWidth - node.clientWidth - 4;
+      if (node.scrollLeft >= max) {
+        node.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        node.scrollBy({ left: step, behavior: 'smooth' });
+      }
+    }, intervalMs);
+    return () => clearInterval(t);
+  }, [autoplay, reduced, paused, intervalMs]);
 
   return (
     <section className="bg-white py-12">
@@ -93,6 +116,10 @@ export default function FeaturedList({
         {/* scroller */}
         <div
           ref={ref}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onTouchStart={() => setPaused(true)}
+          onTouchEnd={() => setPaused(false)}
           className="no-scrollbar snap-x snap-mandatory overflow-x-auto pb-3"
         >
           {/* one slot = 50% on sm+, 90% on mobile (so two cards visible) */}

@@ -1,5 +1,11 @@
 'use client';
 
+// Bike shipping calculator is disabled for now. Code below is preserved
+// — the default export simply 404s. To bring it back, change the default
+// export at the bottom of this file from BikeShippingDisabled to
+// BikeShippingPage.
+import { notFound } from 'next/navigation';
+
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -26,7 +32,8 @@ import { formatCurrency } from '@/lib/utils';
 
 const cityNames = SHIPPING_CITIES.map((c) => c.name).sort();
 
-export default function BikeShippingPage() {
+// Renamed from `export default` so the route is disabled — see stub below.
+function BikeShippingPage() {
   const [form, setForm] = useState({
     fromCity: 'Delhi',
     toCity: 'Manali',
@@ -498,4 +505,13 @@ function Row({ label, value, subtle }) {
       </span>
     </div>
   );
+}
+
+// Default export: 404-stub. Original implementation is the `BikeShippingPage`
+// function above (kept intact, just no longer exported). To re-enable the
+// route, change the line below to `export default BikeShippingPage;`.
+// Reference the original so bundler doesn't tree-shake away its imports.
+void BikeShippingPage;
+export default function BikeShippingDisabled() {
+  notFound();
 }

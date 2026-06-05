@@ -1,18 +1,43 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import EventCard from '@/components/events/EventCard';
 
-export default function EventRow({ title, subtitle, events, viewAllHref, eyebrow }) {
+export default function EventRow({
+  title,
+  subtitle,
+  events,
+  viewAllHref,
+  eyebrow,
+  autoplay = false,
+  intervalMs = 4500,
+}) {
   const ref = useRef(null);
+  const [paused, setPaused] = useState(false);
+  const reduced = useReducedMotion();
   if (!events?.length) return null;
 
   const scroll = (dir) => {
     ref.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    if (!autoplay || reduced || paused) return;
+    const t = setInterval(() => {
+      const node = ref.current;
+      if (!node) return;
+      const max = node.scrollWidth - node.clientWidth - 4;
+      if (node.scrollLeft >= max) {
+        node.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        node.scrollBy({ left: 320, behavior: 'smooth' });
+      }
+    }, intervalMs);
+    return () => clearInterval(t);
+  }, [autoplay, reduced, paused, intervalMs]);
 
   return (
     <section className="bg-white py-8">
@@ -96,6 +121,10 @@ export default function EventRow({ title, subtitle, events, viewAllHref, eyebrow
         whileInView={{ opacity: 1 }}
         viewport={{ once: true, margin: '-50px' }}
         transition={{ delay: 0.3, duration: 0.5 }}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onTouchStart={() => setPaused(true)}
+        onTouchEnd={() => setPaused(false)}
         className="no-scrollbar flex snap-x gap-5 overflow-x-auto pb-3"
       >
         {events.map((e, i) => (
