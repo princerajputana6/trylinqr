@@ -17,21 +17,14 @@ export default function FeaturedList({
   const ref = useRef(null);
   const [paused, setPaused] = useState(false);
   const reduced = useReducedMotion();
-  if (!events.length) return null;
-
-  const scroll = (dir) => {
-    const node = ref.current;
-    if (!node) return;
-    // Page = (~one slot width)
-    const slot = node.querySelector('[data-slot]');
-    const step = slot ? slot.getBoundingClientRect().width + 24 : 480;
-    node.scrollBy({ left: step * dir, behavior: 'smooth' });
-  };
 
   // Auto-slide: advance one slot every intervalMs. Pause on hover/touch.
   // Loops back to the start when it reaches the end.
+  // NOTE: this hook MUST run before any early return below — React rules
+  // of hooks require a stable call order across renders.
   useEffect(() => {
     if (!autoplay || reduced || paused) return;
+    if (!events.length) return;
     const t = setInterval(() => {
       const node = ref.current;
       if (!node) return;
@@ -45,7 +38,18 @@ export default function FeaturedList({
       }
     }, intervalMs);
     return () => clearInterval(t);
-  }, [autoplay, reduced, paused, intervalMs]);
+  }, [autoplay, reduced, paused, intervalMs, events.length]);
+
+  if (!events.length) return null;
+
+  const scroll = (dir) => {
+    const node = ref.current;
+    if (!node) return;
+    // Page = (~one slot width)
+    const slot = node.querySelector('[data-slot]');
+    const step = slot ? slot.getBoundingClientRect().width + 24 : 480;
+    node.scrollBy({ left: step * dir, behavior: 'smooth' });
+  };
 
   return (
     <section className="bg-white py-12">

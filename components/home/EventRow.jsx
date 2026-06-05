@@ -18,14 +18,11 @@ export default function EventRow({
   const ref = useRef(null);
   const [paused, setPaused] = useState(false);
   const reduced = useReducedMotion();
-  if (!events?.length) return null;
 
-  const scroll = (dir) => {
-    ref.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
-  };
-
+  // NOTE: hooks MUST come before any early return — rules of hooks.
   useEffect(() => {
     if (!autoplay || reduced || paused) return;
+    if (!events?.length) return;
     const t = setInterval(() => {
       const node = ref.current;
       if (!node) return;
@@ -37,7 +34,13 @@ export default function EventRow({
       }
     }, intervalMs);
     return () => clearInterval(t);
-  }, [autoplay, reduced, paused, intervalMs]);
+  }, [autoplay, reduced, paused, intervalMs, events?.length]);
+
+  if (!events?.length) return null;
+
+  const scroll = (dir) => {
+    ref.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
+  };
 
   return (
     <section className="bg-white py-8">
