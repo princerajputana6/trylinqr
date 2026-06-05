@@ -89,15 +89,19 @@ export default function FullPosterHero() {
   }, []);
 
   useEffect(() => {
-    fetch('/api/events?limit=24&sort=popular')
+    // Hero shows ONLY featured events that the organizer (or superadmin)
+    // has flagged for the hero slider.
+    fetch('/api/events?limit=24&featured=true&sort=popular')
       .then((r) => r.json())
       .then((data) => {
         const evts = (data.events || []).filter((e) => e.bannerImage);
-        if (evts.length >= 4) {
+        if (evts.length >= 2) {
           const half = Math.ceil(evts.length / 2);
           setRow1(evts.slice(0, half).map((e, i) => toCard(e, i)));
           setRow2(evts.slice(half).map((e, i) => toCard(e, i)));
         }
+        // If no featured yet, keep the static placeholder rows so the
+        // hero never looks empty.
       })
       .catch(() => {});
   }, []);

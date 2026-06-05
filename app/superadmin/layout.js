@@ -15,7 +15,7 @@ import Protected from '@/components/auth/Protected';
 import DashboardShell from '@/components/layout/DashboardShell';
 
 const NAV = [
-  { href: '/superadmin/dashboard', label: 'Overview', icon: LayoutDashboard },
+  { href: '/superadmin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/superadmin/admins', label: 'Organizer Approvals', icon: UserCheck },
   { href: '/superadmin/events', label: 'All Events', icon: CalendarDays },
   { href: '/superadmin/customers', label: 'Users', icon: Users },

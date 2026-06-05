@@ -29,11 +29,14 @@ async function uploadToCloudinary(file) {
   return data.secure_url;
 }
 
+const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+
 export default function ImageUploader({
   value,
   onChange,
   multiple = false,
   label = 'Image',
+  maxMB = 5,
 }) {
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
@@ -42,6 +45,15 @@ export default function ImageUploader({
 
   const handleFiles = async (files) => {
     if (!files?.length) return;
+    // Block anything over the documented limit before hitting Cloudinary.
+    const oversize = files.find((f) => f.size > MAX_BYTES);
+    if (oversize) {
+      toast(
+        `${oversize.name} is ${Math.round(oversize.size / (1024 * 1024))} MB — please use an image under ${maxMB} MB.`,
+        'error',
+      );
+      return;
+    }
     setBusy(true);
     try {
       const urls = [];
@@ -91,9 +103,10 @@ export default function ImageUploader({
             {busy ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              <div className="flex flex-col items-center gap-1 text-xs">
+              <div className="flex flex-col items-center gap-1 text-[11px] leading-tight">
                 <UploadCloud className="h-5 w-5" />
                 Upload
+                <span className="text-[10px] text-ink-muted">≤ {maxMB} MB</span>
               </div>
             )}
             <input

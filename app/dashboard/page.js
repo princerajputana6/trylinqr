@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import {
   CalendarDays,
   Ticket,
@@ -9,6 +10,7 @@ import {
   Eye,
   CalendarPlus,
   ArrowRight,
+  AlertTriangle,
 } from 'lucide-react';
 import StatCard from '@/components/admin/StatCard';
 import StatusBadge from '@/components/admin/StatusBadge';
@@ -16,9 +18,11 @@ import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
 export default function DashboardOverview() {
+  const { data: session } = useSession();
   const [stats, setStats] = useState(null);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const pendingVerification = session?.user?.isApproved === false;
 
   useEffect(() => {
     Promise.all([
@@ -35,6 +39,22 @@ export default function DashboardOverview() {
 
   return (
     <div className="space-y-8">
+      {pendingVerification && (
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+          <div className="flex-1 text-sm text-amber-900">
+            <p className="font-semibold">
+              Account verification pending — your access is limited.
+            </p>
+            <p className="mt-1 text-amber-900/85">
+              You can create and publish events from your dashboard, but they
+              will <b>only go live on TryLinqr once your organizer account is
+              verified</b> by our team. We’ll email you as soon as you’re
+              approved.
+            </p>
+          </div>
+        </div>
+      )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={CalendarDays}

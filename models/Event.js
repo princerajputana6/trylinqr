@@ -20,6 +20,18 @@ const RideDetailsSchema = new mongoose.Schema(
     meetupTime: { type: String },            // "05:00 AM"
     rideStartTime: { type: String },         // "05:30 AM" (sharp)
     rideTill: { type: String },              // "Panchgaon, Gurugram, HR"
+    // Structured destination — picked from LocationPicker. The simple
+    // `rideTill` string stays for backward-compat with older events.
+    destination: {
+      name: { type: String, default: '' },
+      address: { type: String, default: '' },
+      city: { type: String, default: '' },
+      state: { type: String, default: '' },
+      country: { type: String, default: '' },
+      pincode: { type: String, default: '' },
+      lat: { type: Number },
+      lng: { type: Number },
+    },
     distanceKm: { type: Number },
     durationDays: { type: Number },          // for multi-day rides
     difficulty: {

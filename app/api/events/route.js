@@ -21,14 +21,52 @@ export async function GET(req) {
     const limit = Math.min(48, parseInt(searchParams.get('limit') || '12', 10));
 
     if (category) query.category = category;
-    if (city) query['venue.city'] = city;
+    // City: case-insensitive exact-or-partial match so "delhi" finds
+    // events tagged "Delhi", "delhi NCR", etc.
+    if (city) {
+      const safe = String(city).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      query['venue.city'] = { $regex: safe, $options: 'i' };
+    }
     if (featured === 'true') query.isFeatured = true;
     if (organizer) query.organizer = organizer;
-    if (search) query.$text = { $search: search };
+    // Word-by-word search across title + description + tags + venue.
+    // Splits the query on whitespace and AND-matches each word
+    // case-insensitively, so "indie rock delhi" matches an event titled
+    // "Rock Night — Indie Vibes" in Delhi.
+    if (search) {
+      const tokens = String(search)
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 6); // cap to avoid pathological queries
+      if (tokens.length) {
+        query.$and = tokens.map((tok) => {
+          const safe = tok.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const re = new RegExp(safe, 'i');
+          return {
+            $or: [
+              { title: re },
+              { description: re },
+              { tags: re },
+              { 'venue.name': re },
+              { 'venue.city': re },
+              { subCategory: re },
+            ],
+          };
+        });
+      }
+    }
 
     let events = await Event.find(query)
-      .populate('organizer', 'name orgName avatar')
+      .populate('organizer', 'name orgName avatar isApproved isBanned')
       .lean();
+    // Hide events from unapproved or banned organizers (org verification gate).
+    events = events.filter(
+      (e) =>
+        e.organizer &&
+        e.organizer.isApproved !== false &&
+        e.organizer.isBanned !== true,
+    );
 
     if (price === 'free') {
       events = events.filter((e) =>

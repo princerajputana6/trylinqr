@@ -72,6 +72,7 @@ export default function EventForm({ initial, eventId }) {
       // Empty numeric defaults — let the user type, validate on submit.
       { name: '', price: '', totalQuantity: '', description: '', benefits: [] },
     ],
+    isFeatured: initial?.isFeatured || false,
     tags: initial?.tags || [],
     ageRestriction: initial?.ageRestriction || '',
     dressCode: initial?.dressCode || '',
@@ -80,6 +81,7 @@ export default function EventForm({ initial, eventId }) {
       meetupTime: '',
       rideStartTime: '',
       rideTill: '',
+      destination: { name: '', address: '', city: '', state: '', country: '', pincode: '', lat: '', lng: '' },
       distanceKm: '',
       durationDays: '',
       difficulty: '',
@@ -285,10 +287,16 @@ export default function EventForm({ initial, eventId }) {
               <>
                 <h2 className="text-lg font-bold">Basic information</h2>
                 <div>
-                  <label className="label">Event title</label>
+                  <label className="label flex items-center justify-between gap-2">
+                    <span>Event title</span>
+                    <span className="text-[11px] font-normal text-ink-muted">
+                      {form.title.length}/120
+                    </span>
+                  </label>
                   <input
                     className={`input ${errors.title ? 'border-brand-700 focus:ring-brand-700/20' : ''}`}
                     aria-invalid={!!errors.title}
+                    maxLength={120}
                     value={form.title}
                     onChange={(e) => set('title', e.target.value)}
                   />
@@ -311,26 +319,47 @@ export default function EventForm({ initial, eventId }) {
                   </div>
                   <div>
                     <label className="label">Sub-category</label>
-                    <input
-                      className="input"
-                      list={`sub-${form.category}`}
-                      placeholder="Pick one or type your own"
-                      value={form.subCategory}
-                      onChange={(e) => set('subCategory', e.target.value)}
-                    />
+                    <div className="relative">
+                      <input
+                        className="input pr-9"
+                        list={`sub-${form.category}`}
+                        placeholder="Pick one or type your own"
+                        value={form.subCategory}
+                        onChange={(e) => set('subCategory', e.target.value)}
+                      />
+                      {form.subCategory && (
+                        <button
+                          type="button"
+                          aria-label="Clear sub-category"
+                          onClick={() => set('subCategory', '')}
+                          className="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md text-ink-muted hover:bg-pearl hover:text-brand-700"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
                     <datalist id={`sub-${form.category}`}>
                       {(SUB_CATEGORIES[form.category] || []).map((s) => (
                         <option key={s} value={s} />
                       ))}
                     </datalist>
+                    <p className="mt-1 text-[11px] text-ink-muted">
+                      Tap × to clear and pick another.
+                    </p>
                   </div>
                 </div>
                 <div>
-                  <label className="label">Description</label>
+                  <label className="label flex items-center justify-between gap-2">
+                    <span>Description</span>
+                    <span className="text-[11px] font-normal text-ink-muted">
+                      {form.description.length}/2000
+                    </span>
+                  </label>
                   <textarea
                     rows={5}
                     className={`input resize-none ${errors.description ? 'border-brand-700 focus:ring-brand-700/20' : ''}`}
                     aria-invalid={!!errors.description}
+                    maxLength={2000}
                     value={form.description}
                     onChange={(e) => set('description', e.target.value)}
                   />
@@ -463,11 +492,22 @@ export default function EventForm({ initial, eventId }) {
                 </p>
 
                 <div>
-                  <label className="label">Venue name</label>
+                  <label className="label">
+                    Venue name{' '}
+                    <span className="text-xs font-normal text-ink-muted">
+                      ({form.category === 'bike-ride'
+                        ? 'ride start point — where riders meet'
+                        : 'name of the venue or meet-up place'})
+                    </span>
+                  </label>
                   <input
                     className={`input ${errors['venue.name'] ? 'border-brand-700 focus:ring-brand-700/20' : ''}`}
                     aria-invalid={!!errors['venue.name']}
-                    placeholder="e.g. Super Chai, Bandstand, Lakshya Auditorium"
+                    placeholder={
+                      form.category === 'bike-ride'
+                        ? 'e.g. India Gate (start point), Ridge Manali (camp)'
+                        : 'e.g. Super Chai, Bandstand, Lakshya Auditorium'
+                    }
                     value={form.venue.name}
                     onChange={(e) => setVenue('name', e.target.value)}
                   />
@@ -568,6 +608,37 @@ export default function EventForm({ initial, eventId }) {
                     onChange={(e) => setRide('rideTill', e.target.value)}
                   />
                 </div>
+
+                {/* Map-picker for the destination — same component as the
+                    venue picker on the Date & Venue step. */}
+                <LocationPicker
+                  label="Destination location (map / autocomplete)"
+                  placeholder="Search the destination town, landmark, hotel…"
+                  value={form.rideDetails.destination?.address || ''}
+                  onSelect={(loc) =>
+                    setRide('destination', {
+                      name: loc.name || form.rideDetails.destination?.name || '',
+                      address: loc.displayName,
+                      city: loc.city || '',
+                      state: loc.state || '',
+                      country: loc.country || '',
+                      pincode: loc.pincode || '',
+                      lat: loc.lat,
+                      lng: loc.lng,
+                    })
+                  }
+                />
+                {form.rideDetails.destination?.city && (
+                  <p className="-mt-2 text-xs text-ink-muted">
+                    Pinned: {form.rideDetails.destination.city}
+                    {form.rideDetails.destination.state
+                      ? `, ${form.rideDetails.destination.state}`
+                      : ''}
+                    {form.rideDetails.destination.lat
+                      ? ` · ${Number(form.rideDetails.destination.lat).toFixed(4)}, ${Number(form.rideDetails.destination.lng).toFixed(4)}`
+                      : ''}
+                  </p>
+                )}
 
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div>
@@ -688,20 +759,21 @@ export default function EventForm({ initial, eventId }) {
                   <label className="label flex items-center gap-2">
                     <Users className="h-4 w-4 text-brand-700" /> Inclusions
                     <span className="text-xs font-normal text-ink-muted">
-                      (multi-day rides — comma separated)
+                      (one per line — &amp;, commas, quotes are all fine)
                     </span>
                   </label>
-                  <input
-                    className="input"
-                    placeholder="e.g. 2 Nights Stay, Breakfast & Dinner, Group Ride, Ride Coordination"
-                    value={(form.rideDetails.inclusions || []).join(', ')}
+                  <textarea
+                    rows={4}
+                    className="input resize-none font-sans"
+                    placeholder={`2 Nights Stay\nBreakfast & Dinner\nGroup Ride, with marshals\nFuel up at start`}
+                    value={(form.rideDetails.inclusions || []).join('\n')}
                     onChange={(e) =>
                       setRide(
                         'inclusions',
                         e.target.value
-                          .split(',')
+                          .split(/\r?\n/)
                           .map((s) => s.trim())
-                          .filter(Boolean)
+                          .filter(Boolean),
                       )
                     }
                   />
@@ -789,9 +861,26 @@ export default function EventForm({ initial, eventId }) {
                     }
                   />
                 </div>
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-ink-line bg-white p-4 hover:border-brand-700/40">
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 accent-brand-700"
+                    checked={!!form.isFeatured}
+                    onChange={(e) => set('isFeatured', e.target.checked)}
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-obsidian">
+                      Show this event in the homepage hero slider
+                    </p>
+                    <p className="text-xs text-obsidian/65">
+                      Featured events appear in the prominent slider at the top
+                      of TryLinqr.
+                    </p>
+                  </div>
+                </label>
                 <p className="rounded-xl bg-white/5 p-3 text-sm text-ink-muted">
-                  Submitting for review sends your event to a Super Admin for
-                  approval. Saving as draft keeps it private.
+                  Submit will publish your event immediately if your organizer
+                  account is verified. Saving as draft keeps it private.
                 </p>
               </>
             )}
@@ -828,7 +917,7 @@ export default function EventForm({ initial, eventId }) {
                 disabled={busy}
                 className="btn-primary"
               >
-                {busy ? 'Saving…' : 'Submit for review'}
+                {busy ? 'Saving…' : 'Submit'}
               </button>
             </div>
           )}

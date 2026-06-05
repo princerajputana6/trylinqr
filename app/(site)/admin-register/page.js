@@ -72,6 +72,7 @@ export default function AdminRegisterPage() {
             <label className="label">Your name</label>
             <input
               required
+              maxLength={60}
               className="input"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -81,6 +82,8 @@ export default function AdminRegisterPage() {
             <label className="label">Phone</label>
             <input
               className="input"
+              inputMode="tel"
+              maxLength={15}
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
             />
@@ -97,18 +100,30 @@ export default function AdminRegisterPage() {
           />
         </div>
         <div>
-          <label className="label">Organization / brand name</label>
+          <label className="label flex items-center justify-between gap-2">
+            <span>Organization / brand name</span>
+            <span className="text-[11px] font-normal text-ink-muted">
+              {form.orgName.length}/80
+            </span>
+          </label>
           <input
             required
+            maxLength={80}
             className="input"
             value={form.orgName}
             onChange={(e) => setForm({ ...form, orgName: e.target.value })}
           />
         </div>
         <div>
-          <label className="label">About your organization</label>
+          <label className="label flex items-center justify-between gap-2">
+            <span>About your organization</span>
+            <span className="text-[11px] font-normal text-ink-muted">
+              {(form.orgDescription || '').length}/500
+            </span>
+          </label>
           <textarea
             rows={2}
+            maxLength={500}
             className="input resize-none"
             value={form.orgDescription}
             onChange={(e) =>

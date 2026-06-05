@@ -14,7 +14,7 @@ import Protected from '@/components/auth/Protected';
 import DashboardShell from '@/components/layout/DashboardShell';
 
 const NAV = [
-  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/events', label: 'My Events', icon: CalendarDays },
   { href: '/dashboard/events/create', label: 'Create Event', icon: CalendarPlus },
   { href: '/dashboard/bookings', label: 'Bookings', icon: Ticket },

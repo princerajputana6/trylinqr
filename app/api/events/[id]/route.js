@@ -86,8 +86,9 @@ export async function PUT(req, { params }) {
         }
       }
     }
-    if (body.isFeatured !== undefined && auth.user.role === 'superadmin') {
-      event.isFeatured = body.isFeatured;
+    // Organizers can mark/unmark their own events as featured (hero slider).
+    if (body.isFeatured !== undefined) {
+      event.isFeatured = !!body.isFeatured;
     }
 
     await event.save();
