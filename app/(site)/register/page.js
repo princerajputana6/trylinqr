@@ -54,6 +54,21 @@ export default function RegisterPage() {
         </>
       }
     >
+      {/* Organizer CTA — sits at the top of the signup form */}
+      <Link
+        href="/admin-register"
+        className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-brand-700/25 bg-brand-700/[0.05] px-4 py-3 transition-colors hover:bg-brand-700/[0.09]"
+      >
+        <div>
+          <p className="text-sm font-semibold text-brand-700">
+            Hosting an event?
+          </p>
+          <p className="text-xs text-obsidian/70">
+            Join as Organizer and start selling tickets in minutes →
+          </p>
+        </div>
+      </Link>
+
       <form onSubmit={submit} className="space-y-4">
         <div>
           <label className="label">Full name</label>

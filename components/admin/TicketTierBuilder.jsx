@@ -8,8 +8,10 @@ export default function TicketTierBuilder({ tiers, setTiers }) {
       ...tiers,
       {
         name: '',
-        price: 0,
-        totalQuantity: 50,
+        // Leave numeric fields empty so the inputs aren't pre-filled with 0/1.
+        // Validation requires them on submit.
+        price: '',
+        totalQuantity: '',
         description: '',
         benefits: [],
       },
@@ -55,10 +57,9 @@ export default function TicketTierBuilder({ tiers, setTiers }) {
                 type="number"
                 min={0}
                 className="input"
-                value={t.price}
-                onChange={(e) =>
-                  update(i, 'price', Number(e.target.value) || 0)
-                }
+                placeholder="e.g. 499"
+                value={t.price ?? ''}
+                onChange={(e) => update(i, 'price', e.target.value)}
               />
             </div>
             <div>
@@ -67,10 +68,9 @@ export default function TicketTierBuilder({ tiers, setTiers }) {
                 type="number"
                 min={1}
                 className="input"
-                value={t.totalQuantity}
-                onChange={(e) =>
-                  update(i, 'totalQuantity', Number(e.target.value) || 1)
-                }
+                placeholder="e.g. 100"
+                value={t.totalQuantity ?? ''}
+                onChange={(e) => update(i, 'totalQuantity', e.target.value)}
               />
             </div>
           </div>

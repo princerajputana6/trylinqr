@@ -69,7 +69,8 @@ export default function EventForm({ initial, eventId }) {
     galleryImages: initial?.galleryImages || [],
     promoVideo: initial?.promoVideo || '',
     ticketTiers: initial?.ticketTiers || [
-      { name: 'General', price: 0, totalQuantity: 100, description: '', benefits: [] },
+      // Empty numeric defaults — let the user type, validate on submit.
+      { name: '', price: '', totalQuantity: '', description: '', benefits: [] },
     ],
     tags: initial?.tags || [],
     ageRestriction: initial?.ageRestriction || '',
@@ -193,6 +194,12 @@ export default function EventForm({ initial, eventId }) {
     if (!validateStep()) return;
     setBusy(true);
     const cleaned = { ...form };
+    // Coerce ticket-tier numeric fields back to Numbers on submit.
+    cleaned.ticketTiers = (cleaned.ticketTiers || []).map((t) => ({
+      ...t,
+      price: Number(t.price) || 0,
+      totalQuantity: Number(t.totalQuantity) || 1,
+    }));
     if (cleaned.category !== 'bike-ride') {
       cleaned.rideDetails = null;
     } else {

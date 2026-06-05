@@ -31,8 +31,9 @@ export default function BikeShippingPage() {
     fromCity: 'Delhi',
     toCity: 'Manali',
     category: 'cruiser',
-    weight: 235,
-    declaredValue: 250000,
+    // Blank by default so the inputs aren't pre-filled with sample numbers.
+    weight: '',
+    declaredValue: '',
     pickupDate: '',
     express: false,
     insurance: true,
@@ -181,6 +182,7 @@ export default function BikeShippingPage() {
                   min="50"
                   max="500"
                   className="input"
+                  placeholder="e.g. 200"
                   value={form.weight}
                   onChange={set('weight')}
                 />
@@ -207,6 +209,7 @@ export default function BikeShippingPage() {
                   min="0"
                   step="10000"
                   className="input"
+                  placeholder="e.g. 250000"
                   value={form.declaredValue}
                   onChange={set('declaredValue')}
                 />
