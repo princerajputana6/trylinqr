@@ -2,7 +2,7 @@ import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import { ok, fail, notify } from '@/lib/api';
 import { requireUser } from '@/lib/auth';
-import { sendMail, emails } from '@/lib/mailer';
+import { sendMail, emails, notifyAdmin } from '@/lib/mailer';
 
 export async function PUT(req, { params }) {
   try {
@@ -18,6 +18,10 @@ export async function PUT(req, { params }) {
     await user.save();
 
     await sendMail({ to: user.email, ...emails.adminApproved(user.name) });
+    await notifyAdmin({
+      subject: `Organizer approved — ${user.orgName || user.name}`,
+      html: `<p>You approved <b>${user.orgName || user.name}</b> (${user.email}).</p>`,
+    });
     await notify(
       user._id,
       'admin_approved',

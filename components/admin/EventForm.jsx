@@ -28,6 +28,7 @@ import {
 } from '@/lib/constants';
 import { SUB_CATEGORIES, suggestTags } from '@/lib/eventTaxonomy';
 import { useToast } from '@/components/shared/Toast';
+import FieldError from '@/components/admin/FieldError';
 
 function buildSteps(category) {
   const steps = ['Basics', 'Date & Venue', 'Media', 'Tickets', 'Policies'];
@@ -109,26 +110,83 @@ export default function EventForm({ initial, eventId }) {
       return { ...f, rideDetails: { ...f.rideDetails, [key]: next } };
     });
 
+  // ── Field-level validation ──
+  // Returns a flat { fieldPath: 'error message' } object.
+  // Keys use dot-paths for nested objects (e.g. 'venue.city').
+  // Empty object = step is valid.
+  const [errors, setErrors] = useState({});
+
   const validateStep = () => {
-    if (current === 'Basics' && !form.title.trim()) {
-      toast('Event title is required', 'error');
-      return false;
+    const e = {};
+    if (current === 'Basics') {
+      if (!form.title.trim()) e.title = 'Event title is required';
+      else if (form.title.trim().length < 4)
+        e.title = 'Title must be at least 4 characters';
+      else if (form.title.length > 120)
+        e.title = 'Title must be 120 characters or fewer';
+      if (!form.category) e.category = 'Pick a category';
+      if (!form.description?.trim())
+        e.description = 'A short description is required';
+      else if (form.description.trim().length < 20)
+        e.description =
+          'Description must be at least 20 characters so attendees know what to expect';
     }
-    if (current === 'Date & Venue' && !form.startDate) {
-      toast('Start date is required', 'error');
-      return false;
+    if (current === 'Date & Venue') {
+      if (!form.startDate) e.startDate = 'Start date is required';
+      else {
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const sd = new Date(form.startDate);
+        if (sd < today) e.startDate = 'Start date cannot be in the past';
+      }
+      if (form.endDate && form.startDate) {
+        if (new Date(form.endDate) < new Date(form.startDate))
+          e.endDate = 'End date cannot be before the start date';
+      }
+      if (form.startTime && !/^\d{1,2}:\d{2}( ?[APap][Mm])?$/.test(form.startTime))
+        e.startTime = 'Use HH:MM (e.g. 19:30)';
+      if (!form.venue?.city?.trim()) e['venue.city'] = 'City is required';
+      if (!form.venue?.name?.trim())
+        e['venue.name'] = 'Venue name is required (or type "Online")';
+      if (
+        form.venue?.pincode &&
+        !/^\d{6}$/.test(String(form.venue.pincode).trim())
+      )
+        e['venue.pincode'] = 'Pincode should be 6 digits';
     }
     if (current === 'Tickets') {
-      if (form.ticketTiers.some((t) => !t.name.trim())) {
-        toast('Every ticket tier needs a name', 'error');
-        return false;
-      }
+      if (!form.ticketTiers?.length) e.ticketTiers = 'Add at least one tier';
+      form.ticketTiers?.forEach((t, i) => {
+        if (!t.name?.trim()) e[`ticketTiers.${i}.name`] = 'Tier name required';
+        if (t.price === '' || t.price === undefined || isNaN(Number(t.price)))
+          e[`ticketTiers.${i}.price`] = 'Price required (0 for free)';
+        else if (Number(t.price) < 0)
+          e[`ticketTiers.${i}.price`] = 'Price must be 0 or more';
+        if (!t.totalQuantity || Number(t.totalQuantity) < 1)
+          e[`ticketTiers.${i}.totalQuantity`] = 'Total quantity must be ≥ 1';
+      });
+    }
+    if (current === 'Ride Details' && form.category === 'bike-ride') {
+      const r = form.rideDetails || {};
+      if (!r.meetupTime?.trim()) e['ride.meetupTime'] = 'Meetup time required';
+      if (r.distanceKm && (isNaN(+r.distanceKm) || +r.distanceKm <= 0))
+        e['ride.distanceKm'] = 'Distance must be a positive number';
+      if (r.durationDays && (isNaN(+r.durationDays) || +r.durationDays <= 0))
+        e['ride.durationDays'] = 'Duration must be a positive number';
+      if (!r.difficulty) e['ride.difficulty'] = 'Pick a difficulty';
+    }
+    setErrors(e);
+    if (Object.keys(e).length) {
+      toast(Object.values(e)[0], 'error');
+      return false;
     }
     return true;
   };
 
   const next = () => {
-    if (validateStep()) setStep((s) => Math.min(STEPS.length - 1, s + 1));
+    if (validateStep()) {
+      setErrors({});
+      setStep((s) => Math.min(STEPS.length - 1, s + 1));
+    }
   };
 
   const submit = async (publish) => {
@@ -154,7 +212,7 @@ export default function EventForm({ initial, eventId }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(
           eventId
-            ? { ...cleaned, status: publish ? 'pending' : 'draft' }
+            ? { ...cleaned, status: publish ? 'published' : 'draft' }
             : payload
         ),
       }
@@ -164,7 +222,7 @@ export default function EventForm({ initial, eventId }) {
     if (!data.ok) return toast(data.error, 'error');
     toast(
       publish
-        ? 'Event submitted for review'
+        ? 'Event published — it’s now live!'
         : eventId
         ? 'Event updated'
         : 'Draft saved',
@@ -222,10 +280,12 @@ export default function EventForm({ initial, eventId }) {
                 <div>
                   <label className="label">Event title</label>
                   <input
-                    className="input"
+                    className={`input ${errors.title ? 'border-brand-700 focus:ring-brand-700/20' : ''}`}
+                    aria-invalid={!!errors.title}
                     value={form.title}
                     onChange={(e) => set('title', e.target.value)}
                   />
+                  <FieldError name="title" errors={errors} />
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
@@ -262,10 +322,12 @@ export default function EventForm({ initial, eventId }) {
                   <label className="label">Description</label>
                   <textarea
                     rows={5}
-                    className="input resize-none"
+                    className={`input resize-none ${errors.description ? 'border-brand-700 focus:ring-brand-700/20' : ''}`}
+                    aria-invalid={!!errors.description}
                     value={form.description}
                     onChange={(e) => set('description', e.target.value)}
                   />
+                  <FieldError name="description" errors={errors} />
                 </div>
                 <div>
                   <div className="mb-1.5 flex items-center justify-between gap-2">
@@ -327,28 +389,36 @@ export default function EventForm({ initial, eventId }) {
                     <label className="label">Start date</label>
                     <input
                       type="date"
-                      className="input"
+                      className={`input ${errors.startDate ? 'border-brand-700 focus:ring-brand-700/20' : ''}`}
+                      aria-invalid={!!errors.startDate}
+                      min={new Date().toISOString().slice(0, 10)}
                       value={form.startDate}
                       onChange={(e) => set('startDate', e.target.value)}
                     />
+                    <FieldError name="startDate" errors={errors} />
                   </div>
                   <div>
                     <label className="label">End date</label>
                     <input
                       type="date"
-                      className="input"
+                      className={`input ${errors.endDate ? 'border-brand-700 focus:ring-brand-700/20' : ''}`}
+                      aria-invalid={!!errors.endDate}
+                      min={form.startDate || undefined}
                       value={form.endDate}
                       onChange={(e) => set('endDate', e.target.value)}
                     />
+                    <FieldError name="endDate" errors={errors} />
                   </div>
                   <div>
                     <label className="label">Start time</label>
                     <input
                       type="time"
-                      className="input"
+                      className={`input ${errors.startTime ? 'border-brand-700 focus:ring-brand-700/20' : ''}`}
+                      aria-invalid={!!errors.startTime}
                       value={form.startTime}
                       onChange={(e) => set('startTime', e.target.value)}
                     />
+                    <FieldError name="startTime" errors={errors} />
                   </div>
                   <div>
                     <label className="label">End time</label>
@@ -388,18 +458,21 @@ export default function EventForm({ initial, eventId }) {
                 <div>
                   <label className="label">Venue name</label>
                   <input
-                    className="input"
+                    className={`input ${errors['venue.name'] ? 'border-brand-700 focus:ring-brand-700/20' : ''}`}
+                    aria-invalid={!!errors['venue.name']}
                     placeholder="e.g. Super Chai, Bandstand, Lakshya Auditorium"
                     value={form.venue.name}
                     onChange={(e) => setVenue('name', e.target.value)}
                   />
+                  <FieldError name="venue.name" errors={errors} />
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div>
                     <label className="label">City</label>
                     <input
-                      className="input"
+                      className={`input ${errors['venue.city'] ? 'border-brand-700 focus:ring-brand-700/20' : ''}`}
+                      aria-invalid={!!errors['venue.city']}
                       list="cities"
                       value={form.venue.city}
                       onChange={(e) => setVenue('city', e.target.value)}
@@ -409,6 +482,7 @@ export default function EventForm({ initial, eventId }) {
                         <option key={c} value={c} />
                       ))}
                     </datalist>
+                    <FieldError name="venue.city" errors={errors} />
                   </div>
                   <div>
                     <label className="label">State</label>

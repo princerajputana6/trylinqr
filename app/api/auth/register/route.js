@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import { ok, fail } from '@/lib/api';
-import { sendMail, emails } from '@/lib/mailer';
+import { sendMail, emails, notifyAdmin } from '@/lib/mailer';
 
 export async function POST(req) {
   try {
@@ -35,6 +35,11 @@ export async function POST(req) {
     const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verifyToken}&email=${user.email}`;
     const mail = emails.welcome(name, verifyUrl);
     await sendMail({ to: user.email, ...mail });
+    // Notify the platform team about every new signup.
+    await notifyAdmin({
+      subject: `New customer signup — ${name}`,
+      html: `<p><b>${name}</b> (${user.email}${phone ? `, ${phone}` : ''}) just created a TryLinqr account.</p>`,
+    });
 
     return ok({ message: 'Account created. Check your email to verify.' }, 201);
   } catch (e) {

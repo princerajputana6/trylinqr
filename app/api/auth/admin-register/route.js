@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import { ok, fail } from '@/lib/api';
-import { sendMail, emails } from '@/lib/mailer';
+import { sendMail, emails, notifyAdmin } from '@/lib/mailer';
 
 export async function POST(req) {
   try {
@@ -38,6 +38,14 @@ export async function POST(req) {
     const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verifyToken}&email=${user.email}`;
     await sendMail({ to: user.email, ...emails.welcome(name, verifyUrl) });
     await sendMail({ to: user.email, ...emails.adminPending(name) });
+    // Copy the platform team so they can review this organizer.
+    await notifyAdmin({
+      subject: `New organizer pending approval — ${orgName || name}`,
+      html: `<p><b>${orgName || name}</b> just registered as an organizer.</p>
+             <p>Name: ${name}<br/>Email: ${user.email}<br/>Phone: ${phone || '—'}<br/>
+             Org: ${orgName || '—'}</p>
+             <p>Review them in the superadmin queue.</p>`,
+    });
 
     return ok(
       {
