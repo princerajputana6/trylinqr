@@ -17,7 +17,7 @@ import { PROMO_BY_TYPE, calcPromoTotal } from '@/lib/promotions';
 
 export async function POST(req, { params }) {
   try {
-    const auth = await requireUser(['admin', 'superadmin']);
+    const auth = await requireUser(['organizer', 'admin', 'superadmin']);
     if (auth.error) return fail(auth.error, auth.status);
 
     await connectDB();
@@ -39,6 +39,7 @@ export async function POST(req, { params }) {
     if (!event) return fail('Event not found', 404);
     if (
       auth.user.role !== 'superadmin' &&
+      auth.user.role !== 'admin' &&
       String(event.organizer) !== auth.user.id
     ) {
       return fail('Forbidden', 403);

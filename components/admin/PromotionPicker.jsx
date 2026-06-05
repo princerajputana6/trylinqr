@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Loader2, Sparkles, Check } from 'lucide-react';
+import { Loader2, Sparkles, Check, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/components/shared/Toast';
 import { PROMOTIONS, calcPromoTotal } from '@/lib/promotions';
 
@@ -28,6 +28,9 @@ function loadRazorpay() {
  *                   the UI can show them as "active".
  *   onApplied — callback fired after a successful verify with the new
  *               active placements (parent can refresh local state).
+ *
+ * NOTE: Promotions are independent of the event ticket price — even free
+ * (₹0) events can be promoted via paid placements.
  */
 export default function PromotionPicker({
   eventId,
@@ -38,6 +41,9 @@ export default function PromotionPicker({
   const { toast } = useToast();
   const [selected, setSelected] = useState({});
   const [paying, setPaying] = useState(false);
+
+  // Client-side Razorpay key presence check (does NOT reveal the secret)
+  const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 
   const toggle = (type) =>
     setSelected((s) => ({ ...s, [type]: !s[type] }));
@@ -57,6 +63,13 @@ export default function PromotionPicker({
       toast('Pick at least one placement', 'info');
       return;
     }
+    if (!razorpayKeyId) {
+      toast(
+        'Razorpay is not configured. Add NEXT_PUBLIC_RAZORPAY_KEY_ID, RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to your environment variables.',
+        'error',
+      );
+      return;
+    }
     setPaying(true);
     try {
       const orderRes = await fetch(
@@ -71,11 +84,12 @@ export default function PromotionPicker({
       if (!order.ok) throw new Error(order.error || 'Could not start payment');
 
       const loaded = await loadRazorpay();
-      if (!loaded) throw new Error('Payment gateway failed to load');
+      if (!loaded) throw new Error('Payment gateway failed to load. Check your internet connection and try again.');
 
       await new Promise((resolve, reject) => {
         const rzp = new window.Razorpay({
-          key: order.keyId,
+          // Prefer keyId returned by server; fall back to the public env var
+          key: order.keyId || razorpayKeyId,
           amount: order.amount,
           currency: order.currency,
           name: 'TryLinqr',
@@ -112,7 +126,10 @@ export default function PromotionPicker({
         rzp.open();
       });
     } catch (e) {
-      toast(e.message || 'Payment failed', 'error');
+      // Don't show an error toast when the user dismisses the modal
+      if (e.message !== 'Payment cancelled') {
+        toast(e.message || 'Payment failed', 'error');
+      }
     } finally {
       setPaying(false);
     }
@@ -130,6 +147,7 @@ export default function PromotionPicker({
         </h3>
       </div>
 
+      {/* Warning: event not yet saved */}
       {!eventId && (
         <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
           Save the event first — promotions can be purchased from the edit
@@ -137,16 +155,33 @@ export default function PromotionPicker({
         </p>
       )}
 
+      {/* Warning: Razorpay keys missing (client-side check) */}
+      {eventId && !razorpayKeyId && (
+        <div className="mb-3 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
+          <span>
+            Razorpay is not configured. Add{' '}
+            <code className="font-mono">NEXT_PUBLIC_RAZORPAY_KEY_ID</code>,{' '}
+            <code className="font-mono">RAZORPAY_KEY_ID</code> and{' '}
+            <code className="font-mono">RAZORPAY_KEY_SECRET</code> to your
+            environment variables and restart the server.
+          </span>
+        </div>
+      )}
+
       <div className="grid gap-3 sm:grid-cols-2">
         {PROMOTIONS.map((p) => {
           const active = alreadyActive.includes(p.type);
           const picked = !!selected[p.type];
+          // Tiles are disabled ONLY if already active or no eventId saved yet.
+          // Event ticket price does NOT gate promotions — even ₹0 events can be promoted.
+          const isDisabled = active || !eventId;
           return (
             <button
               type="button"
               key={p.type}
-              onClick={() => !active && eventId && toggle(p.type)}
-              disabled={active || !eventId}
+              onClick={() => !isDisabled && toggle(p.type)}
+              disabled={isDisabled}
               className={`relative flex items-start gap-3 rounded-xl border p-4 text-left transition-all ${
                 active
                   ? 'border-emerald-300 bg-emerald-50/50 opacity-90'

@@ -16,10 +16,10 @@ import { PROMO_BY_TYPE, calcPromoTotal } from '@/lib/promotions';
 
 export async function POST(req, { params }) {
   try {
-    const auth = await requireUser(['admin', 'superadmin']);
+    const auth = await requireUser(['organizer', 'admin', 'superadmin']);
     if (auth.error) return fail(auth.error, auth.status);
     if (!razorpayConfigured())
-      return fail('Online payments are not configured', 503);
+      return fail('Razorpay keys are not configured. Please add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to your environment variables.', 503);
 
     await connectDB();
     const { types = [] } = (await req.json().catch(() => ({}))) || {};
@@ -33,6 +33,7 @@ export async function POST(req, { params }) {
     if (!event) return fail('Event not found', 404);
     if (
       auth.user.role !== 'superadmin' &&
+      auth.user.role !== 'admin' &&
       String(event.organizer) !== auth.user.id
     ) {
       return fail('You can only promote your own events', 403);
