@@ -28,7 +28,7 @@ const items = [
 
 export default function WhyChooseUs() {
   return (
-    <section className="bg-white py-20">
+    <section className="bg-white py-10">
       <div className="container-page">
       <div className="mx-auto mb-12 max-w-2xl text-center">
         <p className="section-eyebrow">Why TryLinqr</p>

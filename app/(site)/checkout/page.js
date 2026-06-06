@@ -81,10 +81,21 @@ function CheckoutInner() {
       body: JSON.stringify({ eventId, tierId: tier._id, quantity: qty }),
     });
     const order = await orderRes.json();
-    if (!order.ok) throw new Error(order.error);
+    if (!order.ok) {
+      console.error('create-order failed', order);
+      throw new Error(order.error || `Order failed (${orderRes.status})`);
+    }
+    if (!order.keyId) {
+      throw new Error(
+        'Payment misconfigured: server did not return a Razorpay key. Check NEXT_PUBLIC_RAZORPAY_KEY_ID + RAZORPAY_KEY_ID on Vercel and redeploy.',
+      );
+    }
 
     const loaded = await loadRazorpay();
-    if (!loaded) throw new Error('Could not load payment gateway');
+    if (!loaded)
+      throw new Error(
+        'Could not load Razorpay checkout — check your internet connection and try again.',
+      );
 
     return new Promise((resolve, reject) => {
       const rzp = new window.Razorpay({
@@ -122,12 +133,21 @@ function CheckoutInner() {
       let bookingId;
       if (subtotal > 0 && hasRazorpay) {
         bookingId = await paidBooking();
+      } else if (subtotal > 0 && !hasRazorpay) {
+        // Razorpay key isn't bundled into the client — almost always means
+        // NEXT_PUBLIC_RAZORPAY_KEY_ID was added to Vercel AFTER the deploy
+        // that's currently running. Surface this loudly so it's obvious.
+        throw new Error(
+          'Payment gateway not available. NEXT_PUBLIC_RAZORPAY_KEY_ID is missing — redeploy the app on Vercel so the public key is bundled into the client.',
+        );
       } else {
         bookingId = await freeBooking();
       }
       toast('Booking confirmed!', 'success');
       router.push(`/booking/${bookingId}`);
     } catch (e) {
+      // Log to console with full context so prod debugging is possible.
+      console.error('Booking/payment failed', e);
       toast(e.message || 'Payment failed', 'error');
       setPaying(false);
     }

@@ -103,7 +103,7 @@ const EventSchema = new mongoose.Schema(
     // Paid placement flags. Set true ONLY after a successful Razorpay
     // payment via /api/events/[id]/promote/verify. Surface in:
     //   hero      → homepage hero slider (FullPosterHero)
-    //   list      → Featured Upcoming Events row
+    //   list      → Featured Events row
     //   spotlight → SpotlightCarousel
     //   trending  → Trending Now row
     inSpotlight: { type: Boolean, default: false, index: true },

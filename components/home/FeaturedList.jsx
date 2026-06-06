@@ -8,7 +8,7 @@ import VintageTicket from '@/components/shared/VintageTicket';
 
 export default function FeaturedList({
   events = [],
-  title = 'Featured Upcoming Events',
+  title = 'Featured Events',
   subtitle = 'Hand-picked experiences across every kind of evening — swipe to browse the next drops.',
   viewAllHref = '/explore',
   autoplay = false,
@@ -52,7 +52,7 @@ export default function FeaturedList({
   };
 
   return (
-    <section className="bg-white py-12">
+    <section className="bg-white py-8">
       <div className="container-page">
       <motion.div
         initial={{ opacity: 0, y: 20 }}

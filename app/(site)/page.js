@@ -75,10 +75,10 @@ export default async function HomePage() {
       {/* 3. Spotlight carousel */}
       <SpotlightCarousel events={spotlightEvents} />
 
-      {/* 4. Featured upcoming events (auto-sliding card row) */}
+      {/* 4. Featured events (auto-sliding card row) */}
       <FeaturedList
         events={upcoming}
-        title="Featured Upcoming Events"
+        title="Featured Events"
         subtitle="Keep checking back to stay informed about the activities in our community and reserve your preferred seats in advance."
         autoplay
       />

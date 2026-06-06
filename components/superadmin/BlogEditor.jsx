@@ -90,26 +90,45 @@ export default function BlogEditor({ blog }) {
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'trylinqr');
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5 MB');
+      return;
+    }
 
     try {
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'your-cloud-name'}/image/upload`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      );
+      // Use the existing signed-upload endpoint (same flow as ImageUploader
+      // in the rest of the app). Avoids relying on an unsigned upload preset
+      // that may not exist in the Cloudinary account.
+      const sigRes = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folder: 'trylinqr/blogs' }),
+      });
+      const sig = await sigRes.json();
+      if (!sig.ok) throw new Error(sig.error || 'Could not sign upload');
 
+      const form = new FormData();
+      form.append('file', file);
+      form.append('api_key', sig.apiKey);
+      form.append('timestamp', sig.timestamp);
+      form.append('signature', sig.signature);
+      form.append('folder', sig.folder);
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${sig.cloudName}/auto/upload`,
+        { method: 'POST', body: form },
+      );
       const data = await res.json();
+      if (!data.secure_url) {
+        const detail = data?.error?.message || `HTTP ${res.status}`;
+        throw new Error(`Cloudinary rejected the upload — ${detail}`);
+      }
+
       setFormData((prev) => ({ ...prev, coverImage: data.secure_url }));
       toast.success('Image uploaded successfully');
     } catch (error) {
-      console.error(error);
-      toast.error('Failed to upload image');
+      console.error('blog image upload failed', error);
+      toast.error(error.message || 'Failed to upload image');
     }
   };
 

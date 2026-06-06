@@ -18,6 +18,12 @@ export async function POST(req, { params }) {
   try {
     const auth = await requireUser(['organizer', 'admin', 'superadmin']);
     if (auth.error) return fail(auth.error, auth.status);
+    
+    // Validate event ID first
+    if (!params.id || params.id === 'undefined' || params.id === 'null') {
+      return fail('Event must be saved before purchasing promotions', 400);
+    }
+    
     if (!razorpayConfigured())
       return fail('Razorpay keys are not configured. Please add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to your environment variables.', 503);
 
@@ -42,17 +48,27 @@ export async function POST(req, { params }) {
     const amount = calcPromoTotal(valid);
     if (amount <= 0) return fail('Amount must be greater than zero');
 
-    const rzp = getRazorpay();
-    const order = await rzp.orders.create({
-      amount: amount * 100, // paise
-      currency: 'INR',
-      receipt: `promo-${event._id}`.slice(0, 40),
-      notes: {
-        eventId: String(event._id),
-        types: valid.join(','),
-        purpose: 'event_promotion',
-      },
-    });
+    let order;
+    try {
+      const rzp = getRazorpay();
+      order = await rzp.orders.create({
+        amount: amount * 100, // paise
+        currency: 'INR',
+        receipt: `promo-${event._id}`.slice(0, 40),
+        notes: {
+          eventId: String(event._id),
+          types: valid.join(','),
+          purpose: 'event_promotion',
+        },
+      });
+    } catch (rzpErr) {
+      const detail =
+        rzpErr?.error?.description ||
+        rzpErr?.message ||
+        'Unknown Razorpay error';
+      console.error('Razorpay promote-order failed:', detail, rzpErr);
+      return fail(`Razorpay: ${detail}`, 502);
+    }
 
     return ok({
       orderId: order.id,

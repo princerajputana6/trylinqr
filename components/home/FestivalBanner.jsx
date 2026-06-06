@@ -15,7 +15,7 @@ export default function FestivalBanner({ event }) {
     'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1800&q=75';
 
   return (
-    <section className="bg-white py-16">
+    <section className="bg-white py-10">
       <div className="container-page">
       <p className="section-eyebrow mb-3 text-obsidian">Don&apos;t miss</p>
       <h2 className="font-display text-3xl font-extrabold text-obsidian sm:text-4xl">

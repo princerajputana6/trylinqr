@@ -35,13 +35,26 @@ export async function POST(req) {
       quantity: qty,
     });
 
-    const rzp = getRazorpay();
-    const order = await rzp.orders.create({
-      amount: amount * 100,
-      currency: 'INR',
-      receipt: booking.bookingCode,
-      notes: { bookingId: String(booking._id) },
-    });
+    let order;
+    try {
+      const rzp = getRazorpay();
+      order = await rzp.orders.create({
+        amount: amount * 100,
+        currency: 'INR',
+        receipt: booking.bookingCode,
+        notes: { bookingId: String(booking._id) },
+      });
+    } catch (rzpErr) {
+      // Razorpay SDK throws structured errors — surface the real one so
+      // we don't hide things like "account not activated for live mode"
+      // or "invalid key" behind a generic 500.
+      const detail =
+        rzpErr?.error?.description ||
+        rzpErr?.message ||
+        'Unknown Razorpay error';
+      console.error('Razorpay order.create failed:', detail, rzpErr);
+      return fail(`Razorpay: ${detail}`, 502);
+    }
 
     booking.razorpayOrderId = order.id;
     await booking.save();

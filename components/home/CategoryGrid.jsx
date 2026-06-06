@@ -6,7 +6,7 @@ import { CATEGORIES } from '@/lib/constants';
 
 export default function CategoryGrid() {
   return (
-    <section className="bg-white py-20">
+    <section className="bg-white py-10">
       <div className="container-page">
       <div className="mb-10 flex flex-col items-start justify-between gap-3 md:flex-row md:items-end">
         <div>

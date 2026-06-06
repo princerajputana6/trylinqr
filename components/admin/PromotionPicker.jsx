@@ -93,7 +93,14 @@ export default function PromotionPicker({
         },
       );
       const order = await orderRes.json();
-      if (!order.ok) throw new Error(order.error || 'Could not start payment');
+      if (!order.ok) {
+        // Show a more helpful message if the event doesn't exist yet
+        const errorMsg = order.error || 'Could not start payment';
+        if (errorMsg.includes('saved before purchasing') || errorMsg.includes('Event not found')) {
+          throw new Error('Please save the event first before purchasing promotions');
+        }
+        throw new Error(errorMsg);
+      }
 
       const loaded = await loadRazorpay();
       if (!loaded) throw new Error('Payment gateway failed to load. Check your internet connection and try again.');

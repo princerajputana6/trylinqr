@@ -10,6 +10,16 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (!process.env.GROQ_API_KEY) {
+      return NextResponse.json(
+        { 
+          error: 'Groq API key not configured', 
+          details: 'Please add GROQ_API_KEY to your .env.local file. Get your key from https://console.groq.com/keys'
+        }, 
+        { status: 500 }
+      );
+    }
+
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const { title, category = 'news' } = await req.json();
@@ -67,8 +77,24 @@ Format the response as JSON with these fields:
     });
   } catch (error) {
     console.error('Blog generation error:', error);
+    
+    // Handle specific Groq API errors
+    let errorMessage = 'Failed to generate blog content';
+    let errorDetails = error.message;
+    
+    if (error.message.includes('Invalid API Key') || error.message.includes('invalid_api_key')) {
+      errorMessage = 'Invalid Groq API Key';
+      errorDetails = 'Your Groq API key is invalid or expired. Please get a new key from https://console.groq.com/keys and update GROQ_API_KEY in .env.local';
+    } else if (error.message.includes('401')) {
+      errorMessage = 'Authentication failed';
+      errorDetails = 'Please check your Groq API key at https://console.groq.com/keys';
+    } else if (error.message.includes('rate limit')) {
+      errorMessage = 'Rate limit exceeded';
+      errorDetails = 'You have exceeded the Groq API rate limit. Please try again later or upgrade your plan.';
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to generate blog content', details: error.message },
+      { error: errorMessage, details: errorDetails },
       { status: 500 }
     );
   }

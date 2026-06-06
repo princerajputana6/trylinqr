@@ -31,8 +31,6 @@ import { SUB_CATEGORIES, suggestTags } from '@/lib/eventTaxonomy';
 import { useToast } from '@/components/shared/Toast';
 import FieldError from '@/components/admin/FieldError';
 import PromotionPicker from '@/components/admin/PromotionPicker';
-import TimePicker12h from '@/components/admin/TimePicker12h';
-import PromotionSelector from '@/components/admin/PromotionSelector';
 
 function buildSteps(category) {
   const steps = ['Basics', 'Date & Venue', 'Media', 'Tickets', 'Policies'];
@@ -348,56 +346,30 @@ export default function EventForm({ initial, eventId }) {
       };
     }
     const payload = { ...cleaned, publish };
-    
-    try {
-      const res = await fetch(
-        savedEventId ? `/api/events/${savedEventId}` : '/api/events',
-        {
-          method: savedEventId ? 'PUT' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(
-            savedEventId
-              ? { ...cleaned, status: publish ? 'published' : 'draft' }
-              : payload
-          ),
-        }
-      );
-      const data = await res.json();
-      
-      if (!data.ok) {
-        toast(data.error || 'Failed to save event', 'error');
-        return;
+    const res = await fetch(
+      eventId ? `/api/events/${eventId}` : '/api/events',
+      {
+        method: eventId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(
+          eventId
+            ? { ...cleaned, status: publish ? 'published' : 'draft' }
+            : payload
+        ),
       }
-
-      // Store the event ID if this was a new event creation
-      const createdEventId = data.event?._id || savedEventId;
-      if (!savedEventId && createdEventId) {
-        setSavedEventId(createdEventId);
-      }
-
-      // If promotions were selected, trigger payment flow
-      if (selectedPromotions.length > 0 && createdEventId) {
-        toast('Event saved! Opening payment for promotions...', 'success');
-        // Trigger promotion payment
-        await handlePromotionPayment(createdEventId, selectedPromotions, form.title || 'your event');
-        return;
-      }
-
-      toast(
-        publish
-          ? 'Event published — it’s now live!'
-          : savedEventId
-          ? 'Event updated'
-          : 'Draft saved',
-        'success'
-      );
-      router.push('/dashboard/events');
-    } catch (e) {
-      console.error('Submit error:', e);
-      toast('Failed to save event. Please try again.', 'error');
-    } finally {
-      setBusy(false);
-    }
+    );
+    const data = await res.json();
+    setBusy(false);
+    if (!data.ok) return toast(data.error, 'error');
+    toast(
+      publish
+        ? 'Event published — it’s now live!'
+        : eventId
+        ? 'Event updated'
+        : 'Draft saved',
+      'success'
+    );
+    router.push('/dashboard/events');
   };
 
   return (
@@ -627,19 +599,23 @@ export default function EventForm({ initial, eventId }) {
                     <FieldError name="endDate" errors={errors} />
                   </div>
                   <div>
-                    <label className="label">Start time (AM/PM)</label>
-                    <TimePicker12h
+                    <label className="label">Start time</label>
+                    <input
+                      type="time"
+                      className={`input ${errors.startTime ? 'border-brand-700 focus:ring-brand-700/20' : ''}`}
+                      aria-invalid={!!errors.startTime}
                       value={form.startTime}
-                      onChange={(v) => set('startTime', v)}
-                      ariaInvalid={!!errors.startTime}
+                      onChange={(e) => set('startTime', e.target.value)}
                     />
                     <FieldError name="startTime" errors={errors} />
                   </div>
                   <div>
-                    <label className="label">End time (AM/PM)</label>
-                    <TimePicker12h
+                    <label className="label">End time</label>
+                    <input
+                      type="time"
+                      className="input"
                       value={form.endTime}
-                      onChange={(v) => set('endTime', v)}
+                      onChange={(e) => set('endTime', e.target.value)}
                     />
                   </div>
                 </div>
@@ -757,17 +733,21 @@ export default function EventForm({ initial, eventId }) {
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <label className="label">Meetup time (AM/PM)</label>
-                    <TimePicker12h
+                    <label className="label">Meetup time</label>
+                    <input
+                      type="time"
+                      className="input"
                       value={form.rideDetails.meetupTime}
-                      onChange={(v) => setRide('meetupTime', v)}
+                      onChange={(e) => setRide('meetupTime', e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="label">Ride starts — sharp (AM/PM)</label>
-                    <TimePicker12h
+                    <label className="label">Ride starts (sharp)</label>
+                    <input
+                      type="time"
+                      className="input"
                       value={form.rideDetails.rideStartTime}
-                      onChange={(v) => setRide('rideStartTime', v)}
+                      onChange={(e) => setRide('rideStartTime', e.target.value)}
                     />
                   </div>
                 </div>
@@ -1050,32 +1030,21 @@ export default function EventForm({ initial, eventId }) {
                     }
                   />
                 </div>
-                {/* Show PromotionPicker for editing existing events */}
-                {savedEventId && (
-                  <PromotionPicker
-                    eventId={savedEventId}
-                    eventTitle={form.title || 'this event'}
-                    alreadyActive={[
-                      initial?.isFeatured && 'hero',
-                      initial?.inFeaturedList && 'list',
-                      initial?.inSpotlight && 'spotlight',
-                      initial?.inTrending && 'trending',
-                    ].filter(Boolean)}
-                  />
-                )}
-                {/* Show PromotionSelector for new event creation */}
-                {!savedEventId && (
-                  <PromotionSelector
-                    selected={selectedPromotions}
-                    onChange={setSelectedPromotions}
-                  />
-                )}
+                <PromotionPicker
+                  eventId={eventId}
+                  eventTitle={form.title || 'this event'}
+                  alreadyActive={[
+                    initial?.isFeatured && 'hero',
+                    initial?.inFeaturedList && 'list',
+                    initial?.inSpotlight && 'spotlight',
+                    initial?.inTrending && 'trending',
+                  ].filter(Boolean)}
+                />
                 <p className="rounded-xl bg-white/5 p-3 text-sm text-ink-muted">
                   Submit will publish your event immediately if your organizer
                   account is verified. Saving as draft keeps it private.
-                  {!savedEventId && selectedPromotions.length > 0 && (
-                    <> After submitting, you'll be directed to payment for the selected promotions.</>
-                  )}
+                  Promotions can be purchased here on the edit page after the
+                  event is saved.
                 </p>
               </>
             )}

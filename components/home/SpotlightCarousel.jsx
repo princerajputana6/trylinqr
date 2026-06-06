@@ -46,13 +46,13 @@ export default function SpotlightCarousel({ events = [] }) {
     setI((cur) => (cur + delta + slides.length) % slides.length);
 
   return (
-    <section className="bg-white py-16">
+    <section className="bg-white py-10">
       <div className="container-page">
         <div className="mb-6 flex items-end justify-between gap-3">
           <div>
             <p className="section-eyebrow">Spotlight</p>
             <h2 className="mt-2 font-display text-3xl font-extrabold text-obsidian sm:text-4xl">
-              In the spotlight right now
+              In the SPOTLIGHT right now
             </h2>
             <p className="mt-2 max-w-md text-sm text-obsidian/65">
               The events our team can&apos;t stop talking about this week.
