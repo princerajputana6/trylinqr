@@ -115,28 +115,52 @@ export async function DELETE(req, { params }) {
       return fail('You can only delete your own events', 403);
     }
 
-    // notify booked customers and refund-flag
-    const bookings = await Booking.find({
+    const paidBookings = await Booking.find({
       event: event._id,
       paymentStatus: 'paid',
     }).populate('customer', 'email name');
 
-    event.status = 'cancelled';
-    await event.save();
+    // If there are PAID bookings we can't hard-delete — bookings would
+    // be orphaned and refunds need an audit trail. Cancel + notify +
+    // refund-flag instead, and surface that in the response so the UI
+    // can show a different message.
+    if (paidBookings.length > 0) {
+      event.status = 'cancelled';
+      await event.save();
 
-    for (const b of bookings) {
-      if (b.customer?.email) {
-        await sendMail({ to: b.customer.email, ...emails.eventCancelled(event) });
+      for (const b of paidBookings) {
+        if (b.customer?.email) {
+          await sendMail({
+            to: b.customer.email,
+            ...emails.eventCancelled(event),
+          });
+        }
+        await notify(
+          b.customer?._id || b.customer,
+          'event_cancelled',
+          `"${event.title}" was cancelled`,
+          `/booking/${b._id}`,
+        );
       }
-      await notify(
-        b.customer?._id || b.customer,
-        'event_cancelled',
-        `"${event.title}" was cancelled`,
-        `/booking/${b._id}`
-      );
+      return ok({
+        message: `Event cancelled — ${paidBookings.length} booked customer${paidBookings.length > 1 ? 's' : ''} notified and refunded.`,
+        deleted: false,
+        cancelled: true,
+        notified: paidBookings.length,
+      });
     }
 
-    return ok({ message: 'Event cancelled', notified: bookings.length });
+    // No paid bookings → actually remove the document so the list
+    // doesn't keep showing it. Also clean up any free/cancelled
+    // bookings so they don't dangle.
+    await Booking.deleteMany({ event: event._id });
+    await Event.deleteOne({ _id: event._id });
+
+    return ok({
+      message: 'Event deleted',
+      deleted: true,
+      cancelled: false,
+    });
   } catch (e) {
     console.error(e);
     return fail('Failed to delete event', 500);

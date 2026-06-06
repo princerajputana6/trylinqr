@@ -68,15 +68,26 @@ export default function MyEventsPage() {
   const cancel = async (e) => {
     if (
       !confirm(
-        `Delete "${e.title}"?\n\nThe event will be cancelled and any booked customers will be notified + refunded automatically. This can't be undone.`,
+        `Delete "${e.title}"?\n\nEvents with no paid bookings are removed permanently. If there are booked customers, the event is cancelled and they're notified + refunded automatically. This can't be undone.`,
       )
     )
       return;
     const res = await fetch(`/api/events/${e._id}`, { method: 'DELETE' });
     const data = await res.json();
     if (!data.ok) return toast(data.error, 'error');
-    toast('Event deleted', 'success');
-    load();
+    toast(data.message || 'Event deleted', 'success');
+    if (data.deleted) {
+      // Hard-deleted — drop it from local state immediately so it
+      // disappears from the list without waiting for a refetch.
+      setEvents((list) => list.filter((x) => x._id !== e._id));
+    } else {
+      // Cancelled (paid bookings existed) — reflect the new status.
+      setEvents((list) =>
+        list.map((x) =>
+          x._id === e._id ? { ...x, status: 'cancelled' } : x,
+        ),
+      );
+    }
   };
 
   // Count per status for the filter pills

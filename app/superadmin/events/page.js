@@ -62,15 +62,23 @@ function EventsInner() {
   const del = async (e) => {
     if (
       !confirm(
-        `Delete "${e.title}"?\n\nThe event will be cancelled and any booked customers will be notified + refunded. This action cannot be undone.`,
+        `Delete "${e.title}"?\n\nEvents with no paid bookings are removed permanently. If there are booked customers, the event is cancelled and they're notified + refunded. This action cannot be undone.`,
       )
     )
       return;
     const res = await fetch(`/api/events/${e._id}`, { method: 'DELETE' });
     const data = await res.json();
     if (!data.ok) return toast(data.error, 'error');
-    toast('Event deleted', 'success');
-    load();
+    toast(data.message || 'Event deleted', 'success');
+    if (data.deleted) {
+      setEvents((list) => list.filter((x) => x._id !== e._id));
+    } else {
+      setEvents((list) =>
+        list.map((x) =>
+          x._id === e._id ? { ...x, status: 'cancelled' } : x,
+        ),
+      );
+    }
   };
 
   return (
