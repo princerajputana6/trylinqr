@@ -88,3 +88,6 @@ export async function POST(req, { params }) {
     return fail('Could not create promotion order', 500);
   }
 }
+
+// Env vars: RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET. Re-deploy if you
+// rotate either — Vercel snapshots env vars at build time.
