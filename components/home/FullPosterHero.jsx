@@ -58,6 +58,7 @@ const CAT_ACCENT = {
   exhibition:  P_BABY,
   corporate:   P_ORCHID,
   function:    P_ROSE,
+  travel:      P_BABY,
   other:       P_JADE,
 };
 

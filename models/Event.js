@@ -67,6 +67,7 @@ const EventSchema = new mongoose.Schema(
         'food',
         'comedy',
         'corporate',
+        'travel',
         'other',
       ],
       required: true,

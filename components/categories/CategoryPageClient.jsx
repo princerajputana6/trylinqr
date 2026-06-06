@@ -149,6 +149,19 @@ const categoryThemes = {
       particleEffect: 'professional',
     },
   },
+  travel: {
+    gradient: 'from-sky-500/20 via-sky-400/10 to-transparent',
+    pattern: 'bg-[radial-gradient(circle_at_50%_50%,rgba(166,197,220,0.18)_0%,transparent_50%)]',
+    description: 'Curated group tours, treks, retreats and weekend getaways with verified travel hosts',
+    features: ['Curated Itineraries', 'Small Groups', 'Verified Hosts', 'Pan-India & Abroad'],
+    emoji: '✈️',
+    animation: {
+      iconRotate: 30,
+      iconDuration: 1.0,
+      titleDelay: 0.4,
+      particleEffect: 'sparkle',
+    },
+  },
   other: {
     gradient: 'from-slate-400/20 via-slate-300/10 to-transparent',
     pattern: 'bg-[radial-gradient(circle_at_50%_50%,rgba(148,163,184,0.15)_0%,transparent_50%)]',
