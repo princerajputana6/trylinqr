@@ -13,8 +13,11 @@ import {
 } from 'lucide-react';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import StatusBadge from '@/components/admin/StatusBadge';
+import Pagination, { usePagedList } from '@/components/shared/Pagination';
 import { useToast } from '@/components/shared/Toast';
 import { formatDate, formatCurrency } from '@/lib/utils';
+
+const PAGE_SIZE = 10;
 
 const STATUS_TABS = [
   { value: 'all',       label: 'All' },
@@ -29,6 +32,10 @@ export default function MyEventsPage() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [page, setPage] = useState(1);
+
+  // Reset to page 1 whenever the status filter changes.
+  useEffect(() => setPage(1), [filter]);
 
   const load = () => {
     fetch('/api/admin/events')
@@ -83,6 +90,7 @@ export default function MyEventsPage() {
   );
   const filtered =
     filter === 'all' ? events : events.filter((e) => e.status === filter);
+  const paged = usePagedList(filtered, { page, setPage, pageSize: PAGE_SIZE });
 
   if (loading) return <LoadingSpinner full />;
 
@@ -139,7 +147,7 @@ export default function MyEventsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((e, i) => (
+          {paged.slice.map((e, i) => (
             <motion.div
               key={e._id}
               initial={{ opacity: 0, y: 12 }}
@@ -211,6 +219,12 @@ export default function MyEventsPage() {
               </div>
             </motion.div>
           ))}
+          <Pagination
+            page={paged.page}
+            pages={paged.pages}
+            total={paged.total}
+            onPage={setPage}
+          />
         </div>
       )}
     </div>

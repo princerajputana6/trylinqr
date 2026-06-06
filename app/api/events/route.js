@@ -108,7 +108,11 @@ export async function GET(req) {
 
 export async function POST(req) {
   try {
-    const auth = await requireUser(['admin', 'superadmin']);
+    // Only organizers (role='admin') can create events. Superadmin can
+    // manage / delete / promote / approve any event but cannot author
+    // one — keeps the platform's audit trail clean and matches the
+    // 'organizers create, platform curates' model.
+    const auth = await requireUser(['admin']);
     if (auth.error) return fail(auth.error, auth.status);
 
     await connectDB();

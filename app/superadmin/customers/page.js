@@ -4,8 +4,11 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Ban, ShieldCheck, Search, Trash2 } from 'lucide-react';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import Pagination from '@/components/shared/Pagination';
 import { useToast } from '@/components/shared/Toast';
 import { formatDate } from '@/lib/utils';
+
+const PAGE_SIZE = 12;
 
 export default function UsersPage() {
   const { toast } = useToast();
@@ -13,6 +16,9 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState('');
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+
+  useEffect(() => setPage(1), [role, search]);
 
   const load = () => {
     setLoading(true);
@@ -111,7 +117,7 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((u) => (
+              {filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((u) => (
                 <motion.tr
                   key={u._id}
                   initial={{ opacity: 0 }}
@@ -179,6 +185,13 @@ export default function UsersPage() {
               ))}
             </tbody>
           </table>
+          <Pagination
+            page={page}
+            pages={Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
+            total={filtered.length}
+            onPage={setPage}
+            className="px-4 pb-4"
+          />
         </div>
       )}
     </div>

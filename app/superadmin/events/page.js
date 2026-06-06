@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { Check, X, Star, ExternalLink, Trash2 } from 'lucide-react';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import StatusBadge from '@/components/admin/StatusBadge';
+import Pagination, { usePagedList } from '@/components/shared/Pagination';
 import { useToast } from '@/components/shared/Toast';
 import { formatDate } from '@/lib/utils';
 import { categoryBySlug } from '@/lib/constants';
@@ -26,6 +27,12 @@ function EventsInner() {
   const { toast } = useToast();
   const [status, setStatus] = useState(sp.get('status') || 'all');
   const [events, setEvents] = useState([]);
+  const [page, setPage] = useState(1);
+
+  // Reset to page 1 when the status filter changes.
+  useEffect(() => setPage(1), [status]);
+
+  const PAGE_SIZE = 10;
   const [loading, setLoading] = useState(true);
 
   const load = () => {
@@ -92,7 +99,7 @@ function EventsInner() {
         </div>
       ) : (
         <div className="space-y-3">
-          {events.map((e, i) => {
+          {events.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((e, i) => {
             const cat = categoryBySlug(e.category);
             const CatIcon = cat.icon;
             return (
@@ -183,6 +190,12 @@ function EventsInner() {
               </motion.div>
             );
           })}
+          <Pagination
+            page={page}
+            pages={Math.max(1, Math.ceil(events.length / PAGE_SIZE))}
+            total={events.length}
+            onPage={setPage}
+          />
         </div>
       )}
     </div>
