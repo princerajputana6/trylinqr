@@ -16,10 +16,19 @@ import StatusBadge from '@/components/admin/StatusBadge';
 import { useToast } from '@/components/shared/Toast';
 import { formatDate, formatCurrency } from '@/lib/utils';
 
+const STATUS_TABS = [
+  { value: 'all',       label: 'All' },
+  { value: 'draft',     label: 'Draft' },
+  { value: 'published', label: 'Published' },
+  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'completed', label: 'Completed' },
+];
+
 export default function MyEventsPage() {
   const { toast } = useToast();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
 
   const load = () => {
     fetch('/api/admin/events')
@@ -32,7 +41,9 @@ export default function MyEventsPage() {
   useEffect(load, []);
 
   const togglePublish = async (e) => {
-    const next = e.status === 'published' ? 'draft' : 'pending';
+    // Organizers self-publish now (no superadmin review step) — go straight
+    // to 'published' / 'draft'.
+    const next = e.status === 'published' ? 'draft' : 'published';
     const res = await fetch(`/api/events/${e._id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -41,21 +52,37 @@ export default function MyEventsPage() {
     const data = await res.json();
     if (!data.ok) return toast(data.error, 'error');
     toast(
-      next === 'pending' ? 'Submitted for review' : 'Event unpublished',
-      'success'
+      next === 'published' ? 'Event published' : 'Event unpublished',
+      'success',
     );
     load();
   };
 
   const cancel = async (e) => {
-    if (!confirm(`Cancel "${e.title}"? Booked customers will be notified.`))
+    if (
+      !confirm(
+        `Delete "${e.title}"?\n\nThe event will be cancelled and any booked customers will be notified + refunded automatically. This can't be undone.`,
+      )
+    )
       return;
     const res = await fetch(`/api/events/${e._id}`, { method: 'DELETE' });
     const data = await res.json();
     if (!data.ok) return toast(data.error, 'error');
-    toast('Event cancelled', 'success');
+    toast('Event deleted', 'success');
     load();
   };
+
+  // Count per status for the filter pills
+  const counts = events.reduce(
+    (acc, e) => {
+      acc.all++;
+      acc[e.status] = (acc[e.status] || 0) + 1;
+      return acc;
+    },
+    { all: 0 },
+  );
+  const filtered =
+    filter === 'all' ? events : events.filter((e) => e.status === filter);
 
   if (loading) return <LoadingSpinner full />;
 
@@ -71,16 +98,48 @@ export default function MyEventsPage() {
         </Link>
       </div>
 
-      {events.length === 0 ? (
+      {/* Status filter pills */}
+      <div className="no-scrollbar mb-5 flex gap-2 overflow-x-auto pb-1">
+        {STATUS_TABS.map((t) => {
+          const isOn = filter === t.value;
+          const n = counts[t.value] || 0;
+          return (
+            <button
+              key={t.value}
+              onClick={() => setFilter(t.value)}
+              className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                isOn
+                  ? 'border-brand-700 bg-brand-700 text-white'
+                  : 'border-ink-line bg-white text-obsidian/70 hover:border-brand-700/40 hover:text-brand-700'
+              }`}
+            >
+              {t.label}
+              <span
+                className={`rounded-full px-1.5 text-[10px] font-bold ${
+                  isOn ? 'bg-white/20 text-white' : 'bg-pearl text-obsidian/60'
+                }`}
+              >
+                {n}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {filtered.length === 0 ? (
         <div className="card grid place-items-center py-20 text-center">
-          <p className="font-semibold">No events yet</p>
+          <p className="font-semibold">
+            {events.length === 0
+              ? 'No events yet'
+              : `No ${filter === 'all' ? '' : filter + ' '}events`}
+          </p>
           <Link href="/dashboard/events/create" className="btn-primary mt-4">
-            Create your first event
+            {events.length === 0 ? 'Create your first event' : 'Create new event'}
           </Link>
         </div>
       ) : (
         <div className="space-y-3">
-          {events.map((e, i) => (
+          {filtered.map((e, i) => (
             <motion.div
               key={e._id}
               initial={{ opacity: 0, y: 12 }}

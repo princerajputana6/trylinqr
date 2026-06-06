@@ -284,38 +284,59 @@ export default function EventForm({ initial, eventId }) {
 
   return (
     <div className="mx-auto max-w-3xl">
-      {/* stepper */}
-      <div className="mb-8 flex items-center justify-between">
-        {STEPS.map((label, i) => (
-          <div key={label} className="flex flex-1 items-center">
-            <div className="flex flex-col items-center">
-              <div
-                className={`grid h-9 w-9 place-items-center rounded-full text-sm font-bold transition-colors ${
-                  i < step
-                    ? 'bg-brand-500 text-white'
-                    : i === step
-                    ? 'bg-brand-500/20 text-brand-700 ring-2 ring-brand-500'
-                    : 'bg-white/5 text-ink-muted'
-                }`}
-              >
-                {i < step ? <Check className="h-4 w-4" /> : i + 1}
-              </div>
-              <span className="mt-1 hidden text-xs text-ink-muted sm:block">
-                {label}
-              </span>
-            </div>
-            {i < STEPS.length - 1 && (
-              <div
-                className={`mx-1 h-0.5 flex-1 ${
-                  i < step ? 'bg-brand-500' : 'bg-pearl'
-                }`}
-              />
-            )}
-          </div>
-        ))}
+      {/* Page header */}
+      <div className="mb-6">
+        <p className="section-eyebrow">
+          {eventId ? 'Edit event' : 'Create event'}
+        </p>
+        <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-obsidian sm:text-3xl">
+          {eventId
+            ? form.title || 'Edit your event'
+            : 'Bring your event to TryLinqr'}
+        </h1>
+        <p className="mt-1 text-sm text-obsidian/65">
+          Step {step + 1} of {STEPS.length} · {current}
+        </p>
       </div>
 
-      <div className="card p-6">
+      {/* Stepper — numbered pills, sticky on scroll on mobile */}
+      <div className="sticky top-[68px] z-10 -mx-1 mb-6 rounded-2xl border border-ink-line bg-white/95 p-2.5 backdrop-blur-sm">
+        <div className="no-scrollbar flex items-center gap-1 overflow-x-auto">
+          {STEPS.map((label, i) => {
+            const done = i < step;
+            const active = i === step;
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => i <= step && setStep(i)}
+                className={`group flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-colors ${
+                  active
+                    ? 'bg-brand-700 text-white shadow-glow-soft'
+                    : done
+                    ? 'bg-brand-700/[0.08] text-brand-700 hover:bg-brand-700/[0.14]'
+                    : 'text-obsidian/55'
+                }`}
+              >
+                <span
+                  className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] font-bold ${
+                    active
+                      ? 'bg-white/20 text-white'
+                      : done
+                      ? 'bg-brand-700 text-white'
+                      : 'bg-pearl text-obsidian/55'
+                  }`}
+                >
+                  {done ? <Check className="h-3 w-3" /> : i + 1}
+                </span>
+                <span className="whitespace-nowrap">{label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-ink-line bg-white p-6 shadow-card sm:p-8">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Ban, ShieldCheck, Search } from 'lucide-react';
+import { Ban, ShieldCheck, Search, Trash2 } from 'lucide-react';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { useToast } from '@/components/shared/Toast';
 import { formatDate } from '@/lib/utils';
@@ -37,6 +37,22 @@ export default function UsersPage() {
     setUsers((list) =>
       list.map((x) => (x._id === u._id ? { ...x, isBanned: !x.isBanned } : x))
     );
+  };
+
+  const remove = async (u) => {
+    if (
+      !confirm(
+        `Permanently delete ${u.name || u.email}?\n\nThis cannot be undone. Their past bookings remain in the audit log but are anonymised.`,
+      )
+    )
+      return;
+    const res = await fetch(`/api/superadmin/users/${u._id}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+    if (!data.ok) return toast(data.error, 'error');
+    toast('User deleted', 'success');
+    setUsers((list) => list.filter((x) => x._id !== u._id));
   };
 
   const filtered = users.filter(
@@ -132,22 +148,31 @@ export default function UsersPage() {
                   </td>
                   <td className="p-3">
                     {u.role !== 'superadmin' && (
-                      <button
-                        onClick={() => toggleBan(u)}
-                        className={`btn-outline px-3 py-1.5 text-xs ${
-                          u.isBanned ? '' : 'text-brand-700'
-                        }`}
-                      >
-                        {u.isBanned ? (
-                          <>
-                            <ShieldCheck className="h-3.5 w-3.5" /> Reinstate
-                          </>
-                        ) : (
-                          <>
-                            <Ban className="h-3.5 w-3.5" /> Ban
-                          </>
-                        )}
-                      </button>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => toggleBan(u)}
+                          className={`btn-outline px-3 py-1.5 text-xs ${
+                            u.isBanned ? '' : 'text-brand-700'
+                          }`}
+                        >
+                          {u.isBanned ? (
+                            <>
+                              <ShieldCheck className="h-3.5 w-3.5" /> Reinstate
+                            </>
+                          ) : (
+                            <>
+                              <Ban className="h-3.5 w-3.5" /> Ban
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => remove(u)}
+                          className="btn-outline px-3 py-1.5 text-xs text-brand-700"
+                          title="Permanently delete user"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" /> Delete
+                        </button>
+                      </div>
                     )}
                   </td>
                 </motion.tr>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, X, Mail, Phone, Building2 } from 'lucide-react';
+import { Check, X, Mail, Phone, Building2, Trash2 } from 'lucide-react';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { useToast } from '@/components/shared/Toast';
 import { formatDate } from '@/lib/utils';
@@ -46,6 +46,24 @@ export default function AdminApprovalsPage() {
     if (!data.ok) return toast(data.error, 'error');
     toast('Organizer rejected', 'info');
     setPending((p) => p.filter((x) => x._id !== id));
+  };
+
+  const remove = async (u) => {
+    if (
+      !confirm(
+        `Permanently delete ${u.orgName || u.name}?\n\nTheir active events will be cancelled and booked customers refunded. This cannot be undone.`,
+      )
+    )
+      return;
+    setBusy(u._id);
+    const res = await fetch(`/api/superadmin/users/${u._id}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+    setBusy(null);
+    if (!data.ok) return toast(data.error, 'error');
+    toast('Organizer deleted', 'success');
+    setPending((p) => p.filter((x) => x._id !== u._id));
   };
 
   if (loading) return <LoadingSpinner full />;
@@ -99,7 +117,7 @@ export default function AdminApprovalsPage() {
                     <span>Applied {formatDate(u.createdAt)}</span>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => approve(u._id)}
                     disabled={busy === u._id}
@@ -113,6 +131,14 @@ export default function AdminApprovalsPage() {
                     className="btn-outline text-brand-700"
                   >
                     <X className="h-4 w-4" /> Reject
+                  </button>
+                  <button
+                    onClick={() => remove(u)}
+                    disabled={busy === u._id}
+                    className="btn-outline text-brand-700"
+                    title="Permanently delete organizer"
+                  >
+                    <Trash2 className="h-4 w-4" /> Delete
                   </button>
                 </div>
               </div>

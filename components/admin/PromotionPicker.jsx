@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Loader2, Sparkles, Check, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/components/shared/Toast';
 import { PROMOTIONS, calcPromoTotal } from '@/lib/promotions';
@@ -41,6 +41,18 @@ export default function PromotionPicker({
   const { toast } = useToast();
   const [selected, setSelected] = useState({});
   const [paying, setPaying] = useState(false);
+  // Locally-tracked active placements — seeded from props and grown as
+  // each payment completes. This makes a freshly-paid placement appear
+  // as "Active" immediately, without needing a page refresh.
+  const [localActive, setLocalActive] = useState(() => alreadyActive || []);
+
+  // Re-sync when the parent passes a new alreadyActive list (e.g. after
+  // a re-fetch). Merge — don't lose any local additions.
+  useEffect(() => {
+    setLocalActive((prev) =>
+      Array.from(new Set([...(prev || []), ...(alreadyActive || [])])),
+    );
+  }, [alreadyActive]);
 
   // Client-side Razorpay key presence check (does NOT reveal the secret)
   const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
@@ -114,8 +126,14 @@ export default function PromotionPicker({
               const v = await verifyRes.json();
               if (!v.ok) return reject(new Error(v.error));
               toast('Promotions activated!', 'success');
+              const applied = v.placements || chosen;
+              // Flip the freshly-paid placements to "Active" right now,
+              // without waiting for a parent re-fetch.
+              setLocalActive((prev) =>
+                Array.from(new Set([...(prev || []), ...applied])),
+              );
               setSelected({});
-              onApplied?.(v.placements || chosen);
+              onApplied?.(applied);
               resolve();
             } catch (e) {
               reject(e);
@@ -171,7 +189,7 @@ export default function PromotionPicker({
 
       <div className="grid gap-3 sm:grid-cols-2">
         {PROMOTIONS.map((p) => {
-          const active = alreadyActive.includes(p.type);
+          const active = localActive.includes(p.type);
           const picked = !!selected[p.type];
           // Tiles are disabled ONLY if already active or no eventId saved yet.
           // Event ticket price does NOT gate promotions — even ₹0 events can be promoted.

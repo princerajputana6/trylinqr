@@ -4,14 +4,22 @@ import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Check, X, Star, ExternalLink } from 'lucide-react';
+import { Check, X, Star, ExternalLink, Trash2 } from 'lucide-react';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import StatusBadge from '@/components/admin/StatusBadge';
 import { useToast } from '@/components/shared/Toast';
 import { formatDate } from '@/lib/utils';
 import { categoryBySlug } from '@/lib/constants';
 
-const FILTERS = ['all', 'pending', 'published', 'draft', 'cancelled'];
+// Order matches the dashboard for consistency. No 'pending' — organizers
+// publish themselves now.
+const FILTERS = [
+  { value: 'all',       label: 'All' },
+  { value: 'draft',     label: 'Draft' },
+  { value: 'published', label: 'Published' },
+  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'completed', label: 'Completed' },
+];
 
 function EventsInner() {
   const sp = useSearchParams();
@@ -44,20 +52,34 @@ function EventsInner() {
     load();
   };
 
+  const del = async (e) => {
+    if (
+      !confirm(
+        `Delete "${e.title}"?\n\nThe event will be cancelled and any booked customers will be notified + refunded. This action cannot be undone.`,
+      )
+    )
+      return;
+    const res = await fetch(`/api/events/${e._id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!data.ok) return toast(data.error, 'error');
+    toast('Event deleted', 'success');
+    load();
+  };
+
   return (
     <div>
-      <div className="mb-5 flex flex-wrap gap-2">
+      <div className="no-scrollbar mb-5 flex gap-2 overflow-x-auto pb-1">
         {FILTERS.map((f) => (
           <button
-            key={f}
-            onClick={() => setStatus(f)}
-            className={`rounded-xl px-3 py-1.5 text-sm font-medium capitalize transition-colors ${
-              status === f
-                ? 'bg-brand-500 text-white'
-                : 'bg-white/5 text-white/70 hover:bg-pearl'
+            key={f.value}
+            onClick={() => setStatus(f.value)}
+            className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+              status === f.value
+                ? 'border-brand-700 bg-brand-700 text-white'
+                : 'border-ink-line bg-white text-obsidian/70 hover:border-brand-700/40 hover:text-brand-700'
             }`}
           >
-            {f}
+            {f.label}
           </button>
         ))}
       </div>
@@ -150,6 +172,13 @@ function EventsInner() {
                       <X className="h-3.5 w-3.5" /> Cancel
                     </button>
                   )}
+                  <button
+                    onClick={() => del(e)}
+                    className="btn-ghost px-3 py-1.5 text-xs text-brand-700"
+                    title="Delete event"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Delete
+                  </button>
                 </div>
               </motion.div>
             );
