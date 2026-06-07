@@ -27,6 +27,23 @@ import MiniMap from '@/components/shared/MiniMap';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * Convert a 24-hour 'HH:MM' time string to a 12-hour 'h:MM AM/PM' string
+ * for display. Returns the input as-is if it doesn't match HH:MM (so
+ * legacy values like '5:30 PM' pass through unchanged).
+ */
+function to12h(t) {
+  if (!t || typeof t !== 'string') return t || '';
+  const m = t.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return t;
+  let h = Number(m[1]);
+  const min = m[2];
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  if (h === 0) h = 12;
+  return `${h}:${min} ${ampm}`;
+}
+
 export async function generateMetadata({ params }) {
   const event = await getEventBySlug(params.slug).catch(() => null);
   if (!event) return { title: 'Event not found' };
@@ -81,12 +98,44 @@ export default async function EventPage({ params }) {
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-white/80">
             <span className="flex items-center gap-1.5">
-              <Calendar className="h-4 w-4" /> {formatDate(event.startDate, { weekday: 'long' })}
+              <Calendar className="h-4 w-4" />
+              {(() => {
+                // Show both start AND end date when the event spans multiple
+                // days. Single-day events keep the existing compact format.
+                const start = new Date(event.startDate);
+                const end = event.endDate ? new Date(event.endDate) : null;
+                const sameDay =
+                  !end || start.toDateString() === end.toDateString();
+                if (sameDay) {
+                  return formatDate(event.startDate, {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  });
+                }
+                // Multi-day: collapse "Wed, 10 Jun → Fri, 12 Jun 2026"
+                const sameYear = start.getFullYear() === end.getFullYear();
+                const sLabel = formatDate(event.startDate, {
+                  weekday: 'short',
+                  day: 'numeric',
+                  month: 'short',
+                  ...(sameYear ? {} : { year: 'numeric' }),
+                });
+                const eLabel = formatDate(event.endDate, {
+                  weekday: 'short',
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                });
+                return `${sLabel} → ${eLabel}`;
+              })()}
             </span>
-            {event.startTime && (
+            {(event.startTime || event.endTime) && (
               <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4" /> {event.startTime}
-                {event.endTime ? ` – ${event.endTime}` : ''}
+                <Clock className="h-4 w-4" />
+                {to12h(event.startTime)}
+                {event.endTime ? ` – ${to12h(event.endTime)}` : ''}
               </span>
             )}
             <span className="flex items-center gap-1.5">
