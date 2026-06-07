@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import {
   Calendar,
-  Clock,
   MapPin,
   Eye,
   Star,
@@ -100,44 +99,43 @@ export default async function EventPage({ params }) {
             <span className="flex items-center gap-1.5">
               <Calendar className="h-4 w-4" />
               {(() => {
-                // Show both start AND end date when the event spans multiple
-                // days. Single-day events keep the existing compact format.
+                // Combined date + time range, e.g.
+                //   single day:   'Wed, 10 Jun 2026 · 6:00 PM – 11:00 PM'
+                //   multi day:    'Fri, 12 Jun 2026 9:00 PM → Sun, 14 Jun 2026 1:00 AM'
                 const start = new Date(event.startDate);
                 const end = event.endDate ? new Date(event.endDate) : null;
                 const sameDay =
                   !end || start.toDateString() === end.toDateString();
-                if (sameDay) {
-                  return formatDate(event.startDate, {
+                const fmt = (d, withYear = true) =>
+                  formatDate(d, {
                     weekday: 'short',
                     day: 'numeric',
                     month: 'short',
-                    year: 'numeric',
+                    ...(withYear ? { year: 'numeric' } : {}),
                   });
+                const sTime = to12h(event.startTime);
+                const eTime = to12h(event.endTime);
+                if (sameDay) {
+                  // 'Fri, 12 Jun 2026 · 5:30 PM – 10:00 PM'  (or no times)
+                  const range =
+                    sTime && eTime
+                      ? ` · ${sTime} – ${eTime}`
+                      : sTime
+                      ? ` · ${sTime}`
+                      : eTime
+                      ? ` · until ${eTime}`
+                      : '';
+                  return `${fmt(start)}${range}`;
                 }
-                // Multi-day: collapse "Wed, 10 Jun → Fri, 12 Jun 2026"
+                // Multi-day: 'Fri, 12 Jun 2026 9:00 PM → Sun, 14 Jun 2026 1:00 AM'
                 const sameYear = start.getFullYear() === end.getFullYear();
-                const sLabel = formatDate(event.startDate, {
-                  weekday: 'short',
-                  day: 'numeric',
-                  month: 'short',
-                  ...(sameYear ? {} : { year: 'numeric' }),
-                });
-                const eLabel = formatDate(event.endDate, {
-                  weekday: 'short',
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                });
-                return `${sLabel} → ${eLabel}`;
+                const sLabel = fmt(start, !sameYear);
+                const eLabel = fmt(end, true);
+                return `${sLabel}${sTime ? ' ' + sTime : ''} → ${eLabel}${
+                  eTime ? ' ' + eTime : ''
+                }`;
               })()}
             </span>
-            {(event.startTime || event.endTime) && (
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4" />
-                {to12h(event.startTime)}
-                {event.endTime ? ` – ${to12h(event.endTime)}` : ''}
-              </span>
-            )}
             <span className="flex items-center gap-1.5">
               <MapPin className="h-4 w-4" />
               {event.venue?.city || 'Online'}
