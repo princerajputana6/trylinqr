@@ -1,4 +1,4 @@
-import FullPosterHero from '@/components/home/FullPosterHero';
+import ThreeHero from '@/components/home/ThreeHero';
 import FeaturedList from '@/components/home/FeaturedList';
 import CategoryGrid from '@/components/home/CategoryGrid';
 import EventRow from '@/components/home/EventRow';
@@ -66,11 +66,8 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* 1. Hero */}
-      <FullPosterHero />
-
-      {/* 2. Nearby bar (utility — sits between hero and content) */}
-      <NearbyBar />
+      {/* 1. Hero (NearbyBar now lives inside the hero) */}
+      <ThreeHero events={featured} counts={counts} />
 
       {/* 3. Spotlight carousel */}
       <SpotlightCarousel events={spotlightEvents} />
