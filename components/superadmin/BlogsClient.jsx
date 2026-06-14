@@ -12,6 +12,8 @@ import {
   TrendingUp,
   Search,
   Filter,
+  Sparkles,
+  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDate } from '@/lib/utils';
@@ -27,6 +29,62 @@ export default function BlogsClient({ initialBlogs }) {
   const [blogs, setBlogs] = useState(initialBlogs);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [autoBusy, setAutoBusy] = useState(false);
+  const [autoStep, setAutoStep] = useState('');
+
+  const handleAutoPublish = async () => {
+    if (autoBusy) return;
+    if (
+      !confirm(
+        'This will research 5 trending topics, write full blog posts with Groq, and publish them immediately. Takes about 1-2 minutes. Continue?',
+      )
+    ) {
+      return;
+    }
+
+    setAutoBusy(true);
+    setAutoStep('Researching trending topics…');
+    // Cycle through encouraging status messages while the request runs — the
+    // server doesn't stream progress, so this is purely for the UI feel.
+    const STEPS = [
+      'Researching trending topics…',
+      'Drafting blog 1 of 5…',
+      'Drafting blog 2 of 5…',
+      'Drafting blog 3 of 5…',
+      'Drafting blog 4 of 5…',
+      'Drafting blog 5 of 5…',
+      'Publishing…',
+    ];
+    let stepIdx = 0;
+    const stepTimer = setInterval(() => {
+      stepIdx = Math.min(stepIdx + 1, STEPS.length - 1);
+      setAutoStep(STEPS[stepIdx]);
+    }, 12000);
+
+    try {
+      const res = await fetch('/api/blogs/auto-publish', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Auto-publish failed');
+
+      const created = Array.isArray(data.created) ? data.created : [];
+      const failures = Array.isArray(data.failures) ? data.failures : [];
+      if (created.length > 0) {
+        toast.success(
+          `Published ${created.length} blog${created.length === 1 ? '' : 's'}` +
+            (failures.length ? ` (${failures.length} failed)` : ''),
+        );
+      } else {
+        toast.error('No blogs were published');
+      }
+      router.refresh();
+    } catch (err) {
+      toast.error(err.message || 'Auto-publish failed');
+    } finally {
+      clearInterval(stepTimer);
+      setAutoBusy(false);
+      setAutoStep('');
+    }
+  };
 
   const filteredBlogs = blogs.filter((blog) => {
     const matchesSearch =
@@ -67,13 +125,28 @@ export default function BlogsClient({ initialBlogs }) {
                 Create and manage blog posts for your platform
               </p>
             </div>
-            <button
-              onClick={() => router.push('/superadmin/blogs/create')}
-              className="btn-primary flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Create Blog
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={handleAutoPublish}
+                disabled={autoBusy}
+                className="inline-flex items-center gap-2 rounded-xl border border-brand-700/30 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition-all hover:bg-brand-700/[0.06] disabled:cursor-not-allowed disabled:opacity-70"
+                title="Research 5 topics with Groq and publish full blog posts"
+              >
+                {autoBusy ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
+                {autoBusy ? autoStep || 'Working…' : 'Auto-publish 5 blogs'}
+              </button>
+              <button
+                onClick={() => router.push('/superadmin/blogs/create')}
+                className="btn-primary flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Create Blog
+              </button>
+            </div>
           </div>
 
           <div className="card mb-6 p-4">
