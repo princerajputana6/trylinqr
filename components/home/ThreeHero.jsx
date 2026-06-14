@@ -445,7 +445,7 @@ export default function ThreeHero({ events = [], counts }) {
       `}</style>
 
       {/* ── HERO STAGE (3D bg + corner cards + centred text) ── */}
-      <div className="relative w-full" style={{ height: 560, paddingTop: 68 }}>
+      <div className="relative h-[460px] w-full pt-[68px] md:h-[560px]">
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
 
         {/* Inner container keeps the corner cards inside the page width,
@@ -459,7 +459,7 @@ export default function ThreeHero({ events = [], counts }) {
             <Link
               key={card.href + i}
               href={card.href}
-              className={`absolute z-[5] block ${slot.className}`}
+              className={`absolute z-[5] hidden md:block ${slot.className}`}
               style={{
                 animation: `${slot.anim} ease-in-out infinite`,
                 pointerEvents: 'auto',
@@ -544,7 +544,7 @@ export default function ThreeHero({ events = [], counts }) {
 
           {/* Headline */}
           <h1
-            className="mt-6 font-display text-[40px] font-bold leading-[1.1] sm:text-[48px]"
+            className="mt-4 font-display text-[32px] font-bold leading-[1.1] sm:mt-6 sm:text-[48px]"
             style={{ color: C_INK }}
           >
             Discover &amp; Book

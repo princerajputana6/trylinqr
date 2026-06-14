@@ -17,9 +17,86 @@ import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import Blog from '@/models/Blog';
 import Groq from 'groq-sdk';
+import cloudinary, { cloudinaryConfigured } from '@/lib/cloudinary';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
+
+/* Curated, royalty-free Unsplash photo IDs per blog category. These URLs
+   resolve directly (no redirects) so Cloudinary's uploader can fetch and
+   cache them reliably. Picked one at random per published post. */
+const UNSPLASH_POOLS = {
+  events: [
+    '1470229722913-7c0e2dbbafd3', // crowd at concert lights
+    '1533174072545-7a4b6ad7a6c3', // festival lights
+    '1492684223066-81342ee5ff30', // event hall
+    '1429962714451-bb934ecdc4ec', // concert stage
+    '1501281668745-f7f57925c3b4', // crowd cheering
+  ],
+  tips: [
+    '1499951360447-b19be8fe80f5', // notebook + pen
+    '1455390582262-044cdead277a', // checklist
+    '1517245386807-bb43f82c33c4', // workspace tips
+    '1432821596592-e2c18b78144f', // travel tips
+    '1542435503-956c469947f6',    // post-it notes
+  ],
+  guides: [
+    '1502920917128-1aa500764cbd', // map + camera
+    '1488646953014-85cb44e25828', // travel guide
+    '1473625247510-8ceb1760943f', // compass map
+    '1530789253388-582c481c54b0', // walking tour
+    '1467269204594-9661b134dd2b', // city guide
+  ],
+  news: [
+    '1504711434969-e33886168f5c', // newsroom desk
+    '1495020689067-958852a7765e', // newspaper
+    '1432821596592-e2c18b78144f', // typing on laptop
+    '1450101499163-c8848c66ca85', // press conference
+    '1574391884720-bbc3740c59d1', // event news cover
+  ],
+  community: [
+    '1511795409834-ef04bbd61622', // friends celebrating
+    '1543353071-873f17a7a088',    // food shared at table
+    '1531058020387-3be344556be6', // people at gathering
+    '1518834107812-67b0b7c58434', // dance / community
+    '1556761175-5973dc0f32e7',    // community workshop
+  ],
+  featured: [
+    '1506157786151-b8491531f063', // rock concert lights
+    '1558981806-ec527fa84c39',    // motorcycle adventure
+    '1574391884720-bbc3740c59d1', // jagran lights
+    '1571008887538-b36bb32f4571', // marathon crowd
+    '1533174072545-7a4b6ad7a6c3', // festival
+  ],
+};
+
+function pickPhotoId(category) {
+  const pool = UNSPLASH_POOLS[category] || UNSPLASH_POOLS.news;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+async function uploadCover(category, slug) {
+  const id = pickPhotoId(category);
+  const remoteUrl = `https://images.unsplash.com/photo-${id}?w=1600&q=85&fm=jpg`;
+  if (!cloudinaryConfigured()) {
+    // Cloudinary not set up — fall back to the direct Unsplash URL.
+    return remoteUrl;
+  }
+  try {
+    const res = await cloudinary.uploader.upload(remoteUrl, {
+      folder: 'trylinqr/blog-covers',
+      public_id: `auto_${slug}`,
+      overwrite: true,
+      resource_type: 'image',
+    });
+    return res.secure_url;
+  } catch (err) {
+    // Cloudinary failures shouldn't kill the whole publish — fall back
+    // to the direct Unsplash URL, which is still a valid image.
+    console.error('blog auto-publish: cover upload failed, using direct URL', err);
+    return remoteUrl;
+  }
+}
 
 const SYSTEM_PROMPT =
   'You are an expert content writer for TryLinqr, an Indian event-booking platform. Write engaging, SEO-optimized blog posts about events, bike rides, concerts, jagrans, workshops and community experiences in India. Use a friendly, professional tone. Format the content in Markdown with proper headings, lists, and emphasis.';
@@ -45,18 +122,6 @@ async function uniqueSlug(base) {
     slug = `${base}-${i + 1}`;
   }
   return slug;
-}
-
-function coverImageFor(keyword) {
-  const safe = encodeURIComponent(
-    String(keyword || 'event')
-      .toLowerCase()
-      .replace(/[^a-z0-9 ,-]/g, '')
-      .trim() || 'event',
-  );
-  // Unsplash's `source.unsplash.com/featured` returns a random themed photo
-  // for the keyword query. Stable URL, no auth required.
-  return `https://source.unsplash.com/featured/1600x900/?${safe}`;
 }
 
 async function discoverTopics(groq) {
@@ -166,12 +231,13 @@ export async function POST() {
           ? topic.category
           : 'news';
 
+        const coverImage = await uploadCover(category, slug);
         const blog = await Blog.create({
           title,
           slug,
           excerpt: gen.excerpt || '',
           content: gen.content || '',
-          coverImage: coverImageFor(topic.imageKeyword || topic.title),
+          coverImage,
           author: session.user.id,
           category,
           tags: Array.isArray(gen.tags) ? gen.tags : [],
