@@ -21,6 +21,7 @@
   'use strict';
 
   var script = document.currentScript;
+  var isDeferred = !script; // true when loaded async/deferred (e.g. Next.js Script component)
   if (!script) {
     // Fallback for browsers/loaders where currentScript is null.
     var all = document.getElementsByTagName('script');
@@ -59,7 +60,23 @@
   }
   if (!container) {
     container = document.createElement('div');
-    script.parentNode.insertBefore(container, script.nextSibling);
+    if (!isDeferred && script.parentNode) {
+      // Synchronous load: insert right where the script tag sits in the DOM.
+      script.parentNode.insertBefore(container, script.nextSibling);
+    } else {
+      // Deferred/async load (e.g. Next.js): document.currentScript was null so
+      // we don't know where the organizer intended to place the widget. Auto-
+      // detect the first prominent hero/section element and insert after it.
+      var hero =
+        document.querySelector('[class*="hero"]') ||
+        document.querySelector('section') ||
+        document.querySelector('header');
+      if (hero && hero.parentNode) {
+        hero.parentNode.insertBefore(container, hero.nextSibling);
+      } else {
+        document.body.appendChild(container);
+      }
+    }
   }
   container.setAttribute('data-trylinqr-widget', orgId);
 
