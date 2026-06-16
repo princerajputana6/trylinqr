@@ -67,17 +67,17 @@ export default function SuperadminDashboard() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={Users} label="Total users" value={stats.totalUsers} accent="#3b82f6" index={0} />
-        <StatCard icon={CalendarDays} label="Total events" value={stats.totalEvents} accent="#e63e62" index={1} />
-        <StatCard icon={Ticket} label="Total bookings" value={stats.totalBookings} accent="#8b5cf6" index={2} />
-        <StatCard icon={IndianRupee} label="Platform earnings" value={stats.platformEarnings} prefix="₹" accent="#22c55e" index={3} />
+        <StatCard icon={Users} label="Total users" value={stats.totalUsers} accent="baby" index={0} />
+        <StatCard icon={CalendarDays} label="Total events" value={stats.totalEvents} accent="brand" index={1} />
+        <StatCard icon={Ticket} label="Total bookings" value={stats.totalBookings} accent="orchid" index={2} />
+        <StatCard icon={IndianRupee} label="Platform earnings" value={stats.platformEarnings} prefix="₹" accent="jade" index={3} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={Users} label="Customers" value={stats.customers} accent="#06b6d4" index={0} />
-        <StatCard icon={UserCheck} label="Organizers" value={stats.admins} accent="#f97316" index={1} />
-        <StatCard icon={CalendarDays} label="Published events" value={stats.publishedEvents} accent="#22c55e" index={2} />
-        <StatCard icon={IndianRupee} label="Gross revenue" value={stats.totalRevenue} prefix="₹" accent="#eab308" index={3} />
+        <StatCard icon={Users} label="Customers" value={stats.customers} accent="baby" index={0} />
+        <StatCard icon={UserCheck} label="Organizers" value={stats.admins} accent="sand" index={1} />
+        <StatCard icon={CalendarDays} label="Published events" value={stats.publishedEvents} accent="jade" index={2} />
+        <StatCard icon={IndianRupee} label="Gross revenue" value={stats.totalRevenue} prefix="₹" accent="mellow" index={3} />
       </div>
 
       <div className="card p-5">

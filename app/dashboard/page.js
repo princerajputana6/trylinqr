@@ -60,14 +60,14 @@ export default function DashboardOverview() {
           icon={CalendarDays}
           label="Total events"
           value={stats?.totalEvents || 0}
-          accent="#e63e62"
+          accent="brand"
           index={0}
         />
         <StatCard
           icon={Ticket}
           label="Tickets sold"
           value={stats?.totalTickets || 0}
-          accent="#8b5cf6"
+          accent="orchid"
           index={1}
         />
         <StatCard
@@ -75,14 +75,14 @@ export default function DashboardOverview() {
           label="Revenue"
           value={stats?.totalRevenue || 0}
           prefix="₹"
-          accent="#22c55e"
+          accent="jade"
           index={2}
         />
         <StatCard
           icon={Eye}
           label="Total views"
           value={stats?.totalViews || 0}
-          accent="#06b6d4"
+          accent="baby"
           index={3}
         />
       </div>

@@ -99,7 +99,7 @@ export default function AdminApprovalsPage() {
                     <Building2 className="h-5 w-5 text-brand-700" />
                     <h3 className="text-lg font-bold">{u.orgName}</h3>
                   </div>
-                  <p className="mt-1 text-sm text-white/80">{u.name}</p>
+                  <p className="mt-1 text-sm text-ink-muted">{u.name}</p>
                   {u.orgDescription && (
                     <p className="mt-1 text-sm text-ink-muted">
                       {u.orgDescription}

@@ -5,10 +5,7 @@
  *
  *   <script src="https://YOURAPP.com/widget.js" data-org-id="ORG_ID"></script>
  *
- * From then on, every event they publish with "Show on my website" enabled
- * appears automatically as a left-right slider — no further edits to their
- * site. Works on WordPress, React, Next.js, Wix, Webflow, Squarespace, plain
- * HTML — anything that can run a <script> tag.
+ * Works on WordPress, React, Next.js, Wix, Webflow, Squarespace, plain HTML.
  *
  * Optional attributes:
  *   data-limit="6"             max events to show (1–24)
@@ -66,16 +63,26 @@
   }
   container.setAttribute('data-trylinqr-widget', orgId);
 
-  /* ── 3. Section wrapper with padding ─────────────────────────────────── */
+  /* ── 3. Outer section — full-width band with padding ─────────────────── */
   var section = document.createElement('div');
   section.style.cssText = [
     'width:100%',
     'box-sizing:border-box',
-    'padding:48px 40px',
-    'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
+    'padding:48px 0',                 /* top/bottom rhythm */
     'background:transparent',
+    'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
   ].join(';');
   container.appendChild(section);
+
+  /* Inner wrapper — max-width + horizontal centering */
+  var inner = document.createElement('div');
+  inner.style.cssText = [
+    'max-width:1200px',
+    'margin:0 auto',
+    'padding:0 40px',                 /* left/right spacing */
+    'box-sizing:border-box',
+  ].join(';');
+  section.appendChild(inner);
 
   /* ── 4. Header row (title + nav arrows) ──────────────────────────────── */
   var header = document.createElement('div');
@@ -84,14 +91,11 @@
     'align-items:center',
     'justify-content:space-between',
     'margin-bottom:24px',
+    'gap:12px',
   ].join(';');
 
-  var heading = document.createElement('div');
-  heading.style.cssText = [
-    'display:flex',
-    'align-items:center',
-    'gap:10px',
-  ].join(';');
+  var headingWrap = document.createElement('div');
+  headingWrap.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;';
 
   var titleEl = document.createElement('h2');
   titleEl.textContent = titleText;
@@ -104,9 +108,9 @@
   ].join(';');
 
   var badge = document.createElement('a');
-  badge.href = base;
+  badge.href   = base;
   badge.target = '_blank';
-  badge.rel = 'noopener noreferrer';
+  badge.rel    = 'noopener noreferrer';
   badge.textContent = 'by TryLinqr';
   badge.style.cssText = [
     'font-size:11px',
@@ -118,22 +122,21 @@
     'padding:3px 10px',
     'text-decoration:none',
     'white-space:nowrap',
-    'line-height:1',
+    'line-height:1.8',
+    'display:inline-block',
   ].join(';');
 
-  heading.appendChild(titleEl);
-  heading.appendChild(badge);
+  headingWrap.appendChild(titleEl);
+  headingWrap.appendChild(badge);
 
   /* Arrow buttons */
   var arrows = document.createElement('div');
-  arrows.style.cssText = 'display:flex;gap:8px;';
+  arrows.style.cssText = 'display:flex;gap:8px;flex-shrink:0;';
 
-  function makeArrow(label, dir) {
+  function makeArrow(label, svg) {
     var btn = document.createElement('button');
     btn.setAttribute('aria-label', label);
-    btn.innerHTML = dir === 'prev'
-      ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>'
-      : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+    btn.innerHTML = svg;
     btn.style.cssText = [
       'width:36px',
       'height:36px',
@@ -147,6 +150,7 @@
       'color:#333',
       'transition:background 0.15s,border-color 0.15s',
       'padding:0',
+      'box-shadow:0 1px 4px rgba(0,0,0,0.08)',
     ].join(';');
     btn.addEventListener('mouseenter', function () {
       btn.style.background = '#f5f5f5';
@@ -159,16 +163,22 @@
     return btn;
   }
 
-  var prevBtn = makeArrow('Previous', 'prev');
-  var nextBtn = makeArrow('Next', 'next');
+  var ARROW_L = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+  var ARROW_R = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+
+  var prevBtn = makeArrow('Previous', ARROW_L);
+  var nextBtn = makeArrow('Next', ARROW_R);
   arrows.appendChild(prevBtn);
   arrows.appendChild(nextBtn);
 
-  header.appendChild(heading);
+  header.appendChild(headingWrap);
   header.appendChild(arrows);
-  section.appendChild(header);
+  inner.appendChild(header);
 
   /* ── 5. Slider viewport ──────────────────────────────────────────────── */
+  var CARD_W = 300;
+  var CARD_GAP = 20;
+
   var viewport = document.createElement('div');
   viewport.style.cssText = [
     'overflow:hidden',
@@ -179,23 +189,47 @@
   var track = document.createElement('div');
   track.style.cssText = [
     'display:flex',
-    'gap:20px',
+    'gap:' + CARD_GAP + 'px',
     'transition:transform 0.35s cubic-bezier(0.4,0,0.2,1)',
     'will-change:transform',
+    'align-items:stretch',
   ].join(';');
 
   viewport.appendChild(track);
-  section.appendChild(viewport);
+  inner.appendChild(viewport);
 
-  /* ── 6. Slider state ─────────────────────────────────────────────────── */
-  var CARD_WIDTH   = 300; // px (iframe width)
-  var CARD_GAP     = 20;
+  /* Loading skeleton */
+  var loader = document.createElement('div');
+  loader.style.cssText = 'display:flex;gap:' + CARD_GAP + 'px;padding:4px 0;';
+  for (var s = 0; s < 3; s++) {
+    var sk = document.createElement('div');
+    sk.style.cssText = [
+      'flex:0 0 ' + CARD_W + 'px',
+      'height:340px',
+      'border-radius:16px',
+      'background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%)',
+      'background-size:200% 100%',
+      'animation:tlqr-shimmer 1.4s infinite',
+    ].join(';');
+    loader.appendChild(sk);
+  }
+  inner.appendChild(loader);
+
+  /* Inject shimmer keyframe once */
+  if (!document.getElementById('tlqr-shimmer-style')) {
+    var style = document.createElement('style');
+    style.id = 'tlqr-shimmer-style';
+    style.textContent = '@keyframes tlqr-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}';
+    document.head.appendChild(style);
+  }
+
+  /* ── 6. Slider logic ─────────────────────────────────────────────────── */
   var currentIndex = 0;
   var totalCards   = 0;
 
   function visibleCount() {
-    var w = viewport.offsetWidth || 900;
-    return Math.max(1, Math.floor((w + CARD_GAP) / (CARD_WIDTH + CARD_GAP)));
+    var w = inner.offsetWidth || 760;
+    return Math.max(1, Math.floor((w + CARD_GAP) / (CARD_W + CARD_GAP)));
   }
 
   function maxIndex() {
@@ -204,26 +238,39 @@
 
   function slideTo(idx) {
     currentIndex = Math.max(0, Math.min(idx, maxIndex()));
-    var offset = currentIndex * (CARD_WIDTH + CARD_GAP);
-    track.style.transform = 'translateX(-' + offset + 'px)';
-    prevBtn.style.opacity = currentIndex === 0 ? '0.35' : '1';
-    prevBtn.style.pointerEvents = currentIndex === 0 ? 'none' : 'auto';
-    nextBtn.style.opacity = currentIndex >= maxIndex() ? '0.35' : '1';
-    nextBtn.style.pointerEvents = currentIndex >= maxIndex() ? 'none' : 'auto';
+    track.style.transform = 'translateX(-' + (currentIndex * (CARD_W + CARD_GAP)) + 'px)';
+    prevBtn.style.opacity         = currentIndex === 0         ? '0.35' : '1';
+    prevBtn.style.pointerEvents   = currentIndex === 0         ? 'none' : 'auto';
+    nextBtn.style.opacity         = currentIndex >= maxIndex() ? '0.35' : '1';
+    nextBtn.style.pointerEvents   = currentIndex >= maxIndex() ? 'none' : 'auto';
   }
 
   prevBtn.addEventListener('click', function () { slideTo(currentIndex - 1); });
   nextBtn.addEventListener('click', function () { slideTo(currentIndex + 1); });
   window.addEventListener('resize', function () { slideTo(currentIndex); });
 
-  /* ── 7. Fetch events and build cards ─────────────────────────────────── */
+  /* ── 7. Fetch events ─────────────────────────────────────────────────── */
   var frames = {};
 
   fetch(base + '/api/embed/events?org=' + encodeURIComponent(orgId) + '&limit=' + limit)
     .then(function (r) { return r.json(); })
     .then(function (data) {
+      /* Remove loading skeletons */
+      inner.removeChild(loader);
+
       if (!data || !data.ok || !data.events || !data.events.length) {
-        container.style.display = 'none';
+        /* Show a subtle empty state instead of silently hiding */
+        var empty = document.createElement('div');
+        empty.style.cssText = [
+          'padding:32px 0',
+          'text-align:center',
+          'color:#999',
+          'font-size:14px',
+        ].join(';');
+        empty.textContent = 'No upcoming events at the moment. Check back soon!';
+        inner.appendChild(empty);
+        /* Hide arrows since there's nothing to slide */
+        arrows.style.display = 'none';
         return;
       }
 
@@ -232,9 +279,9 @@
       data.events.forEach(function (ev) {
         var slide = document.createElement('div');
         slide.style.cssText = [
-          'flex:0 0 ' + CARD_WIDTH + 'px',
-          'width:' + CARD_WIDTH + 'px',
-          'min-width:' + CARD_WIDTH + 'px',
+          'flex:0 0 ' + CARD_W + 'px',
+          'width:' + CARD_W + 'px',
+          'min-width:' + CARD_W + 'px',
         ].join(';');
 
         var frame = document.createElement('iframe');
@@ -249,6 +296,7 @@
           'height:340px',
           'color-scheme:normal',
           'display:block',
+          'border-radius:16px',
         ].join(';');
 
         frames[ev.slug] = frame;
@@ -256,14 +304,15 @@
         track.appendChild(slide);
       });
 
-      // Initial arrow state
       slideTo(0);
     })
     .catch(function (err) {
+      inner.removeChild(loader);
       console.warn('[TryLinqr] Could not load events:', err);
+      arrows.style.display = 'none';
     });
 
-  /* ── 8. Auto-resize iframes ──────────────────────────────────────────── */
+  /* ── 8. Auto-resize iframes from postMessage ─────────────────────────── */
   window.addEventListener('message', function (e) {
     var d = e.data;
     if (!d || d.type !== 'trylinqr:embed-height') return;
