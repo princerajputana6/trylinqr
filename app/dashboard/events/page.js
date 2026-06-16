@@ -10,9 +10,11 @@ import {
   EyeOff,
   Trash2,
   ExternalLink,
+  Code2,
 } from 'lucide-react';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import StatusBadge from '@/components/admin/StatusBadge';
+import EmbedCodeModal from '@/components/admin/EmbedCodeModal';
 import Pagination, { usePagedList } from '@/components/shared/Pagination';
 import { useToast } from '@/components/shared/Toast';
 import { formatDate, formatCurrency } from '@/lib/utils';
@@ -33,6 +35,7 @@ export default function MyEventsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [page, setPage] = useState(1);
+  const [embedEvent, setEmbedEvent] = useState(null);
 
   // Reset to page 1 whenever the status filter changes.
   useEffect(() => setPage(1), [filter]);
@@ -219,6 +222,15 @@ export default function MyEventsPage() {
                     <ExternalLink className="h-4 w-4" />
                   </Link>
                 )}
+                {e.status === 'published' && (
+                  <button
+                    onClick={() => setEmbedEvent(e)}
+                    className="btn-ghost text-sm"
+                    title="Embed on your website"
+                  >
+                    <Code2 className="h-4 w-4" /> Embed
+                  </button>
+                )}
                 {e.status !== 'cancelled' && (
                   <button
                     onClick={() => cancel(e)}
@@ -238,6 +250,12 @@ export default function MyEventsPage() {
           />
         </div>
       )}
+
+      <EmbedCodeModal
+        event={embedEvent}
+        open={!!embedEvent}
+        onClose={() => setEmbedEvent(null)}
+      />
     </div>
   );
 }

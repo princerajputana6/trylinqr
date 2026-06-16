@@ -109,6 +109,11 @@ const EventSchema = new mongoose.Schema(
     inSpotlight: { type: Boolean, default: false, index: true },
     inFeaturedList: { type: Boolean, default: false, index: true },
     inTrending: { type: Boolean, default: false, index: true },
+    // Auto-embed: when true, this event is exposed to the organizer's own
+    // website via the /widget.js script + /api/embed/events feed. The
+    // per-event iframe (/embed/:slug) works regardless of this flag — it
+    // only gates the "show automatically on my site" stream.
+    showOnOrgSite: { type: Boolean, default: false, index: true },
     promotionPayments: [
       {
         type: { type: String, enum: ['hero', 'list', 'spotlight', 'trending'] },

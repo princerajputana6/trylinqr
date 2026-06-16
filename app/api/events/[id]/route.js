@@ -90,6 +90,11 @@ export async function PUT(req, { params }) {
     if (body.isFeatured !== undefined) {
       event.isFeatured = !!body.isFeatured;
     }
+    // Auto-embed flag — controls whether the event flows into the
+    // organizer's website widget (/widget.js + /api/embed/events).
+    if (body.showOnOrgSite !== undefined) {
+      event.showOnOrgSite = !!body.showOnOrgSite;
+    }
 
     await event.save();
     return ok({ event });

@@ -16,6 +16,7 @@ import {
   Users,
   ClipboardList,
   Sparkles,
+  Globe,
 } from 'lucide-react';
 import ImageUploader from '@/components/admin/ImageUploader';
 import TicketTierBuilder from '@/components/admin/TicketTierBuilder';
@@ -79,6 +80,7 @@ export default function EventForm({ initial, eventId }) {
       { name: '', price: '', totalQuantity: '', description: '', benefits: [] },
     ],
     isFeatured: initial?.isFeatured || false,
+    showOnOrgSite: initial?.showOnOrgSite || false,
     tags: initial?.tags || [],
     ageRestriction: initial?.ageRestriction || '',
     dressCode: initial?.dressCode || '',
@@ -1050,6 +1052,41 @@ export default function EventForm({ initial, eventId }) {
                     }
                   />
                 </div>
+                {/* Auto-embed opt-in — surfaces this event on the organizer's
+                    own website via the install-once widget script. */}
+                <button
+                  type="button"
+                  onClick={() => set('showOnOrgSite', !form.showOnOrgSite)}
+                  className={`flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
+                    form.showOnOrgSite
+                      ? 'border-brand-700 bg-brand-700/5'
+                      : 'border-ink-line bg-white hover:border-brand-700/40'
+                  }`}
+                >
+                  <Globe className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" />
+                  <span className="flex-1">
+                    <span className="flex items-center gap-2 font-semibold">
+                      Show this event on my website
+                    </span>
+                    <span className="mt-0.5 block text-xs text-ink-muted">
+                      Auto-displays on your own site through the TryLinqr embed
+                      widget. Get the one-time install code from your events
+                      list.
+                    </span>
+                  </span>
+                  <span
+                    className={`relative mt-0.5 inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+                      form.showOnOrgSite ? 'bg-brand-700' : 'bg-ink-line'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                        form.showOnOrgSite ? 'translate-x-5' : 'translate-x-0.5'
+                      }`}
+                    />
+                  </span>
+                </button>
+
                 {/* Show PromotionPicker for editing existing events */}
                 {savedEventId && (
                   <PromotionPicker
