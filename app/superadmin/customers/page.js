@@ -1,14 +1,42 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Ban, ShieldCheck, Search, Trash2 } from 'lucide-react';
+import { Ban, ShieldCheck, Trash2, Search } from 'lucide-react';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import Pagination from '@/components/shared/Pagination';
 import { useToast } from '@/components/shared/Toast';
 import { formatDate } from '@/lib/utils';
 
 const PAGE_SIZE = 12;
+
+function deriveStatus(u) {
+  if (u.isBanned) return 'banned';
+  if (u.role === 'admin' && !u.isApproved && u.rejectionReason) return 'rejected';
+  if (u.role === 'admin' && !u.isApproved) return 'pending';
+  return 'active';
+}
+
+const STATUS_PILL = {
+  active:   'bg-emerald-100 text-emerald-700',
+  pending:  'bg-amber-100 text-amber-700',
+  rejected: 'bg-rose-100 text-rose-700',
+  banned:   'bg-red-100 text-red-700',
+};
+
+function StatusPill({ user }) {
+  const s = deriveStatus(user);
+  return (
+    <span className={`inline-block rounded-full px-3 py-0.5 text-xs font-semibold capitalize ${STATUS_PILL[s]}`}>
+      {s}
+    </span>
+  );
+}
+
+const ROLE_TABS = [
+  { value: '',         label: 'All' },
+  { value: 'customer', label: 'Customers' },
+  { value: 'admin',    label: 'Organizers' },
+];
 
 export default function UsersPage() {
   const { toast } = useToast();
@@ -24,12 +52,23 @@ export default function UsersPage() {
     setLoading(true);
     fetch(`/api/superadmin/users${role ? `?role=${role}` : ''}`)
       .then((r) => r.json())
-      .then((d) => {
-        setUsers(d.users || []);
-        setLoading(false);
-      });
+      .then((d) => { setUsers(d.users || []); setLoading(false); });
   };
   useEffect(load, [role]);
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return users;
+    const q = search.toLowerCase();
+    return users.filter(
+      (u) =>
+        u.name?.toLowerCase().includes(q) ||
+        u.email?.toLowerCase().includes(q) ||
+        u.orgName?.toLowerCase().includes(q)
+    );
+  }, [users, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const toggleBan = async (u) => {
     const res = await fetch(`/api/superadmin/users/${u._id}`, {
@@ -46,154 +85,170 @@ export default function UsersPage() {
   };
 
   const remove = async (u) => {
-    if (
-      !confirm(
-        `Permanently delete ${u.name || u.email}?\n\nThis cannot be undone. Their past bookings remain in the audit log but are anonymised.`,
-      )
-    )
-      return;
-    const res = await fetch(`/api/superadmin/users/${u._id}`, {
-      method: 'DELETE',
-    });
+    if (!confirm(`Permanently delete ${u.name || u.email}?\n\nThis cannot be undone.`)) return;
+    const res = await fetch(`/api/superadmin/users/${u._id}`, { method: 'DELETE' });
     const data = await res.json();
     if (!data.ok) return toast(data.error, 'error');
     toast('User deleted', 'success');
     setUsers((list) => list.filter((x) => x._id !== u._id));
   };
 
-  const filtered = users.filter(
-    (u) =>
-      !search ||
-      u.name?.toLowerCase().includes(search.toLowerCase()) ||
-      u.email?.toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
-    <div>
-      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+    <div className="space-y-4">
+      {/* Filter + search row */}
+      <div className="flex flex-wrap items-center gap-3">
         <div className="flex gap-2">
-          {[
-            { v: '', l: 'All' },
-            { v: 'customer', l: 'Customers' },
-            { v: 'admin', l: 'Organizers' },
-          ].map((r) => (
+          {ROLE_TABS.map((t) => (
             <button
-              key={r.v}
-              onClick={() => setRole(r.v)}
-              className={`rounded-xl px-3 py-1.5 text-sm font-medium transition-colors ${
-                role === r.v
-                  ? 'bg-brand-500 text-white'
-                  : 'bg-white/5 text-white/70 hover:bg-pearl'
+              key={t.value}
+              onClick={() => setRole(t.value)}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
+                role === t.value
+                  ? 'bg-brand-700 text-white shadow-glow-soft'
+                  : 'bg-white border border-ink-line text-obsidian/70 hover:border-brand-700/40 hover:text-brand-700'
               }`}
             >
-              {r.l}
+              {t.label}
             </button>
           ))}
         </div>
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-[220px]">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search users…"
+            placeholder="Search users..."
             className="input pl-9"
           />
         </div>
       </div>
 
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <div className="card overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-ink-line text-left text-xs uppercase text-ink-muted">
-                <th className="p-3">Name</th>
-                <th className="p-3">Email</th>
-                <th className="p-3">Role</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">Joined</th>
-                <th className="p-3"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((u) => (
-                <motion.tr
-                  key={u._id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="border-b border-white/5"
-                >
-                  <td className="p-3 font-medium">
-                    {u.name}
-                    {u.role === 'admin' && u.orgName && (
-                      <span className="block text-xs text-ink-muted">
-                        {u.orgName}
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-3 text-ink-muted">{u.email}</td>
-                  <td className="p-3 capitalize">{u.role}</td>
-                  <td className="p-3">
-                    {u.isBanned ? (
-                      <span className="chip bg-brand-500/15 text-brand-700">
-                        Banned
-                      </span>
-                    ) : u.role === 'admin' && !u.isApproved ? (
-                      <span className="chip bg-amber-500/15 text-amber-400">
-                        Pending
-                      </span>
-                    ) : (
-                      <span className="chip bg-emerald-500/15 text-emerald-400">
-                        Active
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-3 text-xs text-ink-muted">
-                    {formatDate(u.createdAt)}
-                  </td>
-                  <td className="p-3">
-                    {u.role !== 'superadmin' && (
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => toggleBan(u)}
-                          className={`btn-outline px-3 py-1.5 text-xs ${
-                            u.isBanned ? '' : 'text-brand-700'
-                          }`}
-                        >
-                          {u.isBanned ? (
-                            <>
-                              <ShieldCheck className="h-3.5 w-3.5" /> Reinstate
-                            </>
-                          ) : (
-                            <>
-                              <Ban className="h-3.5 w-3.5" /> Ban
-                            </>
+      {/* Table */}
+      <div className="overflow-hidden rounded-2xl border border-ink-line bg-white shadow-card">
+        {loading ? (
+          <div className="py-20"><LoadingSpinner /></div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-ink-line bg-pearl/50">
+                    <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-ink-muted">Name</th>
+                    <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-ink-muted">Email</th>
+                    <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-ink-muted">Role</th>
+                    <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-ink-muted">Status</th>
+                    <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-ink-muted">Joined</th>
+                    <th className="px-5 py-3.5" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-ink-line">
+                  {paged.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-16 text-center text-sm text-ink-muted">
+                        {search ? 'No users match your search.' : 'No users found.'}
+                      </td>
+                    </tr>
+                  ) : (
+                    paged.map((u, i) => (
+                      <motion.tr
+                        key={u._id}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.025 }}
+                        className="group hover:bg-pearl/40"
+                      >
+                        <td className="px-5 py-3.5">
+                          <p className="font-semibold text-obsidian">{u.name}</p>
+                          {u.role === 'admin' && u.orgName && (
+                            <p className="text-xs text-ink-muted">{u.orgName}</p>
                           )}
-                        </button>
-                        <button
-                          onClick={() => remove(u)}
-                          className="btn-outline px-3 py-1.5 text-xs text-brand-700"
-                          title="Permanently delete user"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" /> Delete
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-          <Pagination
-            page={page}
-            pages={Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
-            total={filtered.length}
-            onPage={setPage}
-            className="px-4 pb-4"
-          />
-        </div>
-      )}
+                        </td>
+                        <td className="px-5 py-3.5 text-ink-muted">{u.email}</td>
+                        <td className="px-5 py-3.5 capitalize text-obsidian/80">
+                          {u.role === 'admin' ? 'Admin' : u.role === 'superadmin' ? 'Super Admin' : 'Customer'}
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <StatusPill user={u} />
+                        </td>
+                        <td className="px-5 py-3.5 text-sm text-ink-muted">
+                          {formatDate(u.createdAt)}
+                        </td>
+                        <td className="px-5 py-3.5">
+                          {u.role !== 'superadmin' && (
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => toggleBan(u)}
+                                className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                                  u.isBanned
+                                    ? 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+                                    : 'border-rose-200 text-rose-600 hover:bg-rose-50'
+                                }`}
+                              >
+                                {u.isBanned
+                                  ? <><ShieldCheck className="h-3.5 w-3.5" /> Reinstate</>
+                                  : <><Ban className="h-3.5 w-3.5" /> Ban</>}
+                              </button>
+                              <button
+                                onClick={() => remove(u)}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" /> Delete
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </motion.tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination footer */}
+            <div className="flex items-center justify-between border-t border-ink-line px-5 py-3.5">
+              <p className="text-sm text-ink-muted">
+                Page <span className="font-semibold text-obsidian">{page}</span> of{' '}
+                <span className="font-semibold text-obsidian">{totalPages}</span> ·{' '}
+                <span className="font-semibold text-obsidian">{filtered.length}</span> items
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="grid h-8 w-8 place-items-center rounded-lg border border-ink-line text-sm text-ink-muted transition hover:bg-pearl disabled:opacity-40"
+                >
+                  ‹
+                </button>
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  const start = Math.max(1, Math.min(page - 2, totalPages - 4));
+                  const p = start + i;
+                  if (p > totalPages) return null;
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`grid h-8 w-8 place-items-center rounded-lg text-sm font-medium transition ${
+                        page === p
+                          ? 'bg-brand-700 text-white shadow-glow-soft'
+                          : 'border border-ink-line text-ink-muted hover:bg-pearl'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="grid h-8 w-8 place-items-center rounded-lg border border-ink-line text-sm text-ink-muted transition hover:bg-pearl disabled:opacity-40"
+                >
+                  ›
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
