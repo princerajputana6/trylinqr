@@ -106,7 +106,7 @@ export default async function TicketScanPage({ params, searchParams }) {
               )}
               {event?.organizer && (
                 <p className="mt-1 text-xs text-obsidian/55">
-                  Hosted by {event.organizer}
+                  Hosted by {event.organizer.orgName || event.organizer.name}
                 </p>
               )}
             </div>
