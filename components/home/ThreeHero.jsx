@@ -204,7 +204,7 @@ export default function ThreeHero({ events = [], counts }) {
   };
 
   const headline1 = ['Discover', '&', 'Book'];
-  const headline2 = ['Experiences', 'in', '2', 'Minutes.'];
+  const headline2 = ['Experiences', 'in', '5', 'Minutes.'];
 
   const posters = events.filter((e) => e?.bannerImage).slice(0, 8);
 
