@@ -241,8 +241,7 @@ export async function POST() {
           author: session.user.id,
           category,
           tags: Array.isArray(gen.tags) ? gen.tags : [],
-          status: 'published',
-          publishedAt: new Date(),
+          status: 'draft',
           readTime: Number.isFinite(gen.readTime) ? gen.readTime : 8,
           seo: {
             metaTitle: title,

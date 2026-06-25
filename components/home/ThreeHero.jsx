@@ -203,8 +203,8 @@ export default function ThreeHero({ events = [], counts }) {
     router.push(`/explore?${params.toString()}`);
   };
 
-  const headline1 = ['Discover', '&', 'Book'];
-  const headline2 = ['Experiences', 'in', '5', 'Minutes.'];
+  const headline1 = ['Create', '&', 'Discover'];
+  const headline2 = ['Events', 'in', '5', 'Minutes.'];
 
   const posters = events.filter((e) => e?.bannerImage).slice(0, 8);
 
@@ -213,6 +213,7 @@ export default function ThreeHero({ events = [], counts }) {
     { n: counts?.organizers, label: 'Organizers' },
     { n: counts?.categories, label: 'Categories' },
     { n: counts?.cities,     label: 'Cities' },
+    { n: counts?.blogs,      label: 'Blog Posts' },
   ];
 
   return (

@@ -26,7 +26,7 @@ export default function CategoryGrid() {
               >
                 <Link
                   href={`/categories/${c.slug}`}
-                  className="group flex shrink-0 items-center gap-1.5 rounded-full border border-black/10 px-4 py-2 text-[13px] font-medium text-black/60 transition-all hover:border-black hover:bg-black hover:text-white"
+                  className="group flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-black/10 px-4 py-2 text-[13px] font-medium text-black/60 transition-all hover:border-black hover:bg-black hover:text-white"
                 >
                   <Icon className="h-3.5 w-3.5" strokeWidth={2} />
                   {c.label}
