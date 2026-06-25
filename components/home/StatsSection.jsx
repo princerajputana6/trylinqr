@@ -1,60 +1,70 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import AnimatedCounter from '@/components/shared/AnimatedCounter';
 
 export default function StatsSection({ counts }) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  const bgY = useTransform(scrollYProgress, [0, 1], ['-8%', '8%']);
+
   const stats = [
-    { label: 'Live events',  value: counts.events || 0,     suffix: '+', color: '#efb3c7' },
-    { label: 'Organizers',  value: counts.organizers || 0,  suffix: '+', color: '#f8c49c' },
-    { label: 'Categories',  value: counts.categories || 0,               color: '#a6c5dc' },
-    { label: 'Cities',      value: counts.cities || 0,                   color: '#c9ddb1' },
+    { label: 'Live events',  value: counts?.events || 0,      suffix: '+' },
+    { label: 'Organizers',   value: counts?.organizers || 0,  suffix: '+' },
+    { label: 'Categories',   value: counts?.categories || 0,  suffix: ''  },
+    { label: 'Cities',       value: counts?.cities || 0,      suffix: ''  },
   ];
 
   return (
-    <section className="bg-white py-8">
+    <section ref={ref} className="relative overflow-hidden bg-black py-20">
+      {/* Parallax grid */}
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-50px' }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="container-page grid grid-cols-2 gap-4 sm:grid-cols-4"
+        style={{ y: bgY }}
+        className="pointer-events-none absolute inset-[-10%]"
+        aria-hidden
       >
-        {stats.map((s, i) => (
-          <motion.div
-            key={s.label}
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: '-50px' }}
-            transition={{
-              delay: 0.1 + i * 0.1,
-              duration: 0.5,
-              type: 'spring',
-              stiffness: 200,
-              damping: 15,
-            }}
-            className="text-center"
-          >
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="font-display text-3xl font-extrabold sm:text-4xl"
-              style={{ color: s.color }}
-            >
-              <AnimatedCounter value={s.value} suffix={s.suffix || ''} />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
-              className="mt-1 text-xs text-ink-muted"
-            >
-              {s.label}
-            </motion.div>
-          </motion.div>
-        ))}
+        <div
+          className="h-full w-full opacity-[0.04]"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)',
+            backgroundSize: '60px 60px',
+          }}
+        />
       </motion.div>
+
+      <div className="container-page relative z-10">
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="mb-12 text-center text-[11px] font-bold uppercase tracking-[0.28em] text-white/60"
+        >
+          By the numbers
+        </motion.p>
+
+        <div className="grid grid-cols-2 gap-px bg-white/[0.06] sm:grid-cols-4">
+          {stats.map((s, i) => (
+            <motion.div
+              key={s.label}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.08 }}
+              className="group bg-black px-8 py-10 text-center transition-colors hover:bg-white/[0.03]"
+            >
+              <div className="font-display text-5xl font-black text-white sm:text-6xl">
+                <AnimatedCounter value={s.value} suffix={s.suffix} />
+              </div>
+              <div className="mt-3 text-[11px] font-bold uppercase tracking-[0.22em] text-white/60 transition-colors group-hover:text-white/60">
+                {s.label}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
     </section>
   );
 }

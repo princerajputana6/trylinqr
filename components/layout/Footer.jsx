@@ -45,13 +45,13 @@ export default function Footer() {
       <div className="container-page grid gap-10 py-16 lg:grid-cols-12">
         {/* brand + social */}
         <div className="lg:col-span-4">
-          <div className="mb-5 w-fit rounded-xl bg-white px-3 py-2 shadow-card">
+          <div className="mb-5">
             <Image
               src="/trylinqr.png"
               alt="TryLinqr"
               width={140}
               height={38}
-              className="h-8 w-auto"
+              className="h-9 w-auto brightness-0 invert"
             />
           </div>
           <p className="max-w-sm text-sm leading-relaxed text-white/65">

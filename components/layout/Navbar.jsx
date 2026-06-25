@@ -74,11 +74,7 @@ export default function Navbar() {
   };
 
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow] duration-300 ${
-        transparent ? 'bg-transparent' : 'bg-white'
-      } ${scrolled ? 'shadow-sm' : ''}`}
-    >
+    <header className="fixed inset-x-0 top-0 z-50 bg-white shadow-sm transition-shadow duration-300">
       <nav className="container-page flex h-[68px] items-center gap-4">
         <Link
           href="/"
@@ -106,7 +102,7 @@ export default function Navbar() {
             onMouseLeave={() => setCats(false)}
           >
             <button
-              className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold text-obsidian/75 transition-colors hover:text-brand-700"
+              className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors text-obsidian/75 hover:text-brand-700"
             >
               Categories
               <ChevronDown className="h-3.5 w-3.5" />
@@ -236,17 +232,16 @@ export default function Navbar() {
                 Join as Organizer
               </Link>
               <Link
-                /* preserve where the user came from so post-login returns there */
                 href={`/login?callbackUrl=${encodeURIComponent(
                   pathname && pathname !== '/login' ? pathname : '/',
                 )}`}
-                className="whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold text-obsidian/75 hover:text-brand-700"
+                className="whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold text-obsidian/75 transition-colors hover:text-brand-700"
               >
                 Log in
               </Link>
               <Link
                 href="/register"
-                className="whitespace-nowrap rounded-xl bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-glow transition-all hover:bg-brand-800 hover:-translate-y-0.5"
+                className="whitespace-nowrap rounded-xl bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-glow transition-all hover:-translate-y-0.5 hover:bg-brand-800"
               >
                 Sign up
               </Link>
@@ -261,6 +256,11 @@ export default function Navbar() {
           </button>
         </div>
       </nav>
+
+      {/* Gradient that merges the white navbar into the black hero on home page */}
+      {isHome && !scrolled && (
+        <div className="pointer-events-none absolute inset-x-0 top-full h-14 bg-gradient-to-b from-white to-transparent" />
+      )}
 
       <AnimatePresence>
         {open && (

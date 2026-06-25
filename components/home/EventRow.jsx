@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import EventCard from '@/components/events/EventCard';
 
@@ -17,125 +17,82 @@ export default function EventRow({
 }) {
   const ref = useRef(null);
   const [paused, setPaused] = useState(false);
-  const reduced = useReducedMotion();
 
-  // NOTE: hooks MUST come before any early return — rules of hooks.
   useEffect(() => {
-    if (!autoplay || reduced || paused) return;
-    if (!events?.length) return;
+    if (!autoplay || paused || !events?.length) return;
     const t = setInterval(() => {
       const node = ref.current;
       if (!node) return;
       const max = node.scrollWidth - node.clientWidth - 4;
-      if (node.scrollLeft >= max) {
-        node.scrollTo({ left: 0, behavior: 'smooth' });
-      } else {
-        node.scrollBy({ left: 320, behavior: 'smooth' });
-      }
+      if (node.scrollLeft >= max) node.scrollTo({ left: 0, behavior: 'smooth' });
+      else node.scrollBy({ left: 280 + 16, behavior: 'smooth' });
     }, intervalMs);
     return () => clearInterval(t);
-  }, [autoplay, reduced, paused, intervalMs, events?.length]);
+  }, [autoplay, paused, intervalMs, events?.length]);
 
   if (!events?.length) return null;
 
-  const scroll = (dir) => {
-    ref.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
-  };
+  const scroll = (dir) => ref.current?.scrollBy({ left: dir * (280 + 16), behavior: 'smooth' });
 
   return (
-    <section className="bg-white py-8">
+    <section className="bg-white py-16">
       <div className="container-page">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-50px' }}
-        transition={{ duration: 0.5 }}
-        className="mb-4 flex items-end justify-between gap-4"
-      >
-        <div>
-          {eyebrow && (
-            <motion.p
-              initial={{ opacity: 0, x: -10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1, duration: 0.4 }}
-              className="section-eyebrow mb-2"
-            >
-              {eyebrow}
-            </motion.p>
-          )}
-          <motion.h2
-            initial={{ opacity: 0, x: -10 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2, duration: 0.4 }}
-            className="font-display text-2xl font-extrabold text-obsidian sm:text-3xl"
-          >
-            {title}
-          </motion.h2>
-          {subtitle && (
-            <motion.p
-              initial={{ opacity: 0, x: -10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3, duration: 0.4 }}
-              className="mt-1 text-sm text-obsidian/65"
-            >
-              {subtitle}
-            </motion.p>
-          )}
-        </div>
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, x: 10 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.2, duration: 0.4 }}
-          className="flex items-center gap-2"
+          transition={{ duration: 0.5 }}
+          className="mb-8 flex items-end justify-between gap-4"
         >
-          {viewAllHref && (
-            <Link
-              href={viewAllHref}
-              className="hidden items-center gap-1 text-sm font-semibold text-brand-700 hover:underline sm:flex"
-            >
-              View all <ArrowRight className="h-4 w-4" />
-            </Link>
-          )}
-          <motion.button
-            onClick={() => scroll(-1)}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="grid h-9 w-9 place-items-center rounded-lg border border-ink-line bg-white text-obsidian shadow-card hover:bg-pearl"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </motion.button>
-          <motion.button
-            onClick={() => scroll(1)}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="grid h-9 w-9 place-items-center rounded-lg border border-ink-line bg-white text-obsidian shadow-card hover:bg-pearl"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </motion.button>
-        </motion.div>
-      </motion.div>
-      <motion.div
-        ref={ref}
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, margin: '-50px' }}
-        transition={{ delay: 0.3, duration: 0.5 }}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onTouchStart={() => setPaused(true)}
-        onTouchEnd={() => setPaused(false)}
-        className="no-scrollbar flex snap-x gap-5 overflow-x-auto pb-3"
-      >
-        {events.map((e, i) => (
-          <div key={e._id} className="w-[280px] shrink-0 snap-start">
-            <EventCard event={e} index={i} />
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-black/30">
+              {eyebrow || 'Events'}
+            </p>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight text-black sm:text-4xl">
+              {title}
+            </h2>
+            {subtitle && (
+              <p className="mt-1.5 text-[14px] text-black/45">{subtitle}</p>
+            )}
           </div>
-        ))}
-      </motion.div>
+          <div className="flex items-center gap-2">
+            {viewAllHref && (
+              <Link
+                href={viewAllHref}
+                className="hidden items-center gap-1 text-[13px] font-semibold text-black underline-offset-4 hover:underline sm:flex"
+              >
+                See all <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
+            <button
+              onClick={() => scroll(-1)}
+              className="grid h-9 w-9 place-items-center rounded-full border border-black/10 bg-white text-black transition-all hover:border-black hover:bg-black hover:text-white"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => scroll(1)}
+              className="grid h-9 w-9 place-items-center rounded-full border border-black/10 bg-white text-black transition-all hover:border-black hover:bg-black hover:text-white"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Horizontal scroll track */}
+        <div
+          ref={ref}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          className="no-scrollbar flex snap-x gap-4 overflow-x-auto pb-2"
+        >
+          {events.map((e, i) => (
+            <div key={String(e._id)} className="w-[260px] shrink-0 snap-start sm:w-[280px]">
+              <EventCard event={e} index={i} />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -1,164 +1,85 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import VintageTicket from '@/components/shared/VintageTicket';
+import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
+import EventCard from '@/components/events/EventCard';
+
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
+const item = {
+  hidden: { opacity: 0, y: 22 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
+};
 
 export default function FeaturedList({
   events = [],
   title = 'Featured Events',
-  subtitle = 'Hand-picked experiences across every kind of evening — swipe to browse the next drops.',
+  subtitle,
   viewAllHref = '/explore',
-  autoplay = false,
-  intervalMs = 5000,
+  autoplay,
 }) {
-  const ref = useRef(null);
-  const [paused, setPaused] = useState(false);
-  const reduced = useReducedMotion();
-
-  // Auto-slide: advance one slot every intervalMs. Pause on hover/touch.
-  // Loops back to the start when it reaches the end.
-  // NOTE: this hook MUST run before any early return below — React rules
-  // of hooks require a stable call order across renders.
-  useEffect(() => {
-    if (!autoplay || reduced || paused) return;
-    if (!events.length) return;
-    const t = setInterval(() => {
-      const node = ref.current;
-      if (!node) return;
-      const slot = node.querySelector('[data-slot]');
-      const step = slot ? slot.getBoundingClientRect().width + 24 : 480;
-      const max = node.scrollWidth - node.clientWidth - 4;
-      if (node.scrollLeft >= max) {
-        node.scrollTo({ left: 0, behavior: 'smooth' });
-      } else {
-        node.scrollBy({ left: step, behavior: 'smooth' });
-      }
-    }, intervalMs);
-    return () => clearInterval(t);
-  }, [autoplay, reduced, paused, intervalMs, events.length]);
-
   if (!events.length) return null;
 
-  const scroll = (dir) => {
-    const node = ref.current;
-    if (!node) return;
-    // Page = (~one slot width)
-    const slot = node.querySelector('[data-slot]');
-    const step = slot ? slot.getBoundingClientRect().width + 24 : 480;
-    node.scrollBy({ left: step * dir, behavior: 'smooth' });
-  };
-
   return (
-    <section className="bg-white py-8">
+    <section className="bg-white py-16">
       <div className="container-page">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-50px' }}
-        transition={{ duration: 0.6 }}
-        className="mx-auto mb-6 max-w-3xl text-center"
-      >
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.1, duration: 0.4 }}
-          className="section-eyebrow"
+          transition={{ duration: 0.5 }}
+          className="mb-8 flex items-end justify-between gap-4"
         >
-          What&apos;s on
-        </motion.p>
-        <motion.h2
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="mt-2 font-display text-3xl font-extrabold text-obsidian sm:text-4xl"
-        >
-          {title}
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="mt-3 text-sm leading-relaxed text-obsidian/65 sm:text-base"
-        >
-          {subtitle}
-        </motion.p>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, margin: '-50px' }}
-        transition={{ delay: 0.4, duration: 0.5 }}
-        className="relative"
-      >
-        {/* arrows */}
-        <motion.button
-          onClick={() => scroll(-1)}
-          aria-label="Scroll left"
-          whileHover={{ scale: 1.1, y: '-55%' }}
-          whileTap={{ scale: 0.95 }}
-          className="absolute -left-3 top-1/2 z-20 hidden -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full border border-ink-line bg-white text-obsidian shadow-card hover:border-brand-700/40 sm:grid"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </motion.button>
-        <motion.button
-          onClick={() => scroll(1)}
-          aria-label="Scroll right"
-          whileHover={{ scale: 1.1, y: '-55%' }}
-          whileTap={{ scale: 0.95 }}
-          className="absolute -right-3 top-1/2 z-20 hidden -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full border border-ink-line bg-white text-obsidian shadow-card hover:border-brand-700/40 sm:grid"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </motion.button>
-
-        {/* scroller */}
-        <div
-          ref={ref}
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-          onTouchStart={() => setPaused(true)}
-          onTouchEnd={() => setPaused(false)}
-          className="no-scrollbar snap-x snap-mandatory overflow-x-auto pb-3"
-        >
-          {/* one slot = 50% on sm+, 90% on mobile (so two cards visible) */}
-          <div className="flex gap-6 px-1">
-            {events.map((e, i) => (
-              <motion.div
-                key={e._id}
-                data-slot
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: '-100px' }}
-                transition={{ delay: Math.min(i * 0.1, 0.5), duration: 0.5 }}
-                className="w-[88%] shrink-0 snap-start sm:w-[calc(50%-12px)]"
-              >
-                <VintageTicket event={e} size="list" />
-              </motion.div>
-            ))}
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-neutral-400">
+              What's on
+            </p>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-tight text-black sm:text-4xl">
+              {title}
+            </h2>
+            {subtitle && (
+              <p className="mt-2 max-w-lg text-[14px] text-neutral-500">{subtitle}</p>
+            )}
           </div>
-        </div>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay: 0.5, duration: 0.5 }}
-        className="mt-10 text-center"
-      >
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Link href={viewAllHref} className="btn-outline">
-            View all events
-            <ArrowRight className="h-4 w-4" />
+          <Link
+            href={viewAllHref}
+            className="hidden shrink-0 items-center gap-1 text-[13px] font-semibold text-black underline-offset-4 hover:underline sm:flex"
+          >
+            See all <ArrowRight className="h-4 w-4" />
           </Link>
         </motion.div>
-      </motion.div>
+
+        {/* 4-column card grid */}
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: '-50px' }}
+          className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
+        >
+          {events.slice(0, 8).map((e, i) => (
+            <motion.div key={String(e._id)} variants={item}>
+              <EventCard event={e} index={i} />
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* See all — mobile */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 }}
+          className="mt-8 text-center sm:hidden"
+        >
+          <Link
+            href={viewAllHref}
+            className="inline-flex items-center gap-1.5 rounded-full border border-black px-5 py-2.5 text-[13px] font-semibold text-black hover:bg-black hover:text-white transition-all"
+          >
+            See all events <ArrowRight className="h-4 w-4" />
+          </Link>
+        </motion.div>
       </div>
     </section>
   );

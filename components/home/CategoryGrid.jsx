@@ -6,58 +6,35 @@ import { CATEGORIES } from '@/lib/constants';
 
 export default function CategoryGrid() {
   return (
-    <section className="bg-white py-10">
+    <section className="border-b border-black/[0.06] bg-white py-0">
       <div className="container-page">
-      <div className="mb-10 flex flex-col items-start justify-between gap-3 md:flex-row md:items-end">
-        <div>
-          <p className="section-eyebrow">Browse</p>
-          <h2 className="mt-2 font-display text-3xl font-extrabold text-obsidian sm:text-4xl">
-            Every kind of experience
-          </h2>
-          <p className="mt-2 max-w-md text-sm text-obsidian/65">
-            Concerts, workshops, festivals, sports, food and beyond — pick a
-            vibe and dive in.
-          </p>
-        </div>
-        <Link
-          href="/explore"
-          className="text-sm font-semibold text-brand-700 hover:underline"
-        >
-          Explore all →
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {CATEGORIES.map((c, i) => {
-          const Icon = c.icon;
-          return (
-            <motion.div
-              key={c.slug}
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ delay: i * 0.03, duration: 0.35 }}
-            >
-              <Link href={`/categories/${c.slug}`}>
-                <motion.div
-                  whileHover={{ y: -6, scale: 1.04 }}
-                  transition={{ type: 'spring', stiffness: 280, damping: 22 }}
-                  className="hover-glow group relative overflow-hidden rounded-2xl p-5 shadow-card ring-1 ring-obsidian/5"
-                  style={{ backgroundColor: c.color }}
+        <div className="no-scrollbar flex items-center gap-2 overflow-x-auto py-4">
+          <Link
+            href="/explore"
+            className="flex shrink-0 items-center gap-2 rounded-full border border-black px-4 py-2 text-[13px] font-semibold text-black transition-all hover:bg-black hover:text-white"
+          >
+            All Events
+          </Link>
+          {CATEGORIES.map((c, i) => {
+            const Icon = c.icon;
+            return (
+              <motion.div
+                key={c.slug}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.05 + i * 0.03, duration: 0.35 }}
+              >
+                <Link
+                  href={`/categories/${c.slug}`}
+                  className="group flex shrink-0 items-center gap-1.5 rounded-full border border-black/10 px-4 py-2 text-[13px] font-medium text-black/60 transition-all hover:border-black hover:bg-black hover:text-white"
                 >
-                  {/* White icon chip — sits cleanly on the pastel card */}
-                  <div className="grid h-11 w-11 place-items-center rounded-xl bg-white text-obsidian shadow-sm">
-                    <Icon className="h-5 w-5" strokeWidth={2.2} />
-                  </div>
-                  <p className="mt-3 text-sm font-semibold text-obsidian">
-                    {c.label}
-                  </p>
-                </motion.div>
-              </Link>
-            </motion.div>
-          );
-        })}
-      </div>
+                  <Icon className="h-3.5 w-3.5" strokeWidth={2} />
+                  {c.label}
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
